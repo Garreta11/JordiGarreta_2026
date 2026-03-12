@@ -28,7 +28,7 @@
       background-repeat: no-repeat;
       scale: 1.05; // subtle oversize to avoid edge bleed during drift
       will-change: transform;
-      animation: bgDrift 30s infinite linear;
+      //animation: bgDrift 30s infinite linear;
       transform-origin: center;
     }
 
