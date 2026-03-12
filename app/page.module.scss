@@ -41,15 +41,22 @@
     width: 100%;
     height: 100%;
   
-    backdrop-filter: blur(100px);
+    // 1. Prefijo y filtro estándar
     -webkit-backdrop-filter: blur(100px);
+    backdrop-filter: blur(100px);
   
-    background: rgba(0,0,0,0.4);
+    // 2. Fondo semi-transparente (ajusta el alpha según necesites)
+    background: rgba(0, 0, 0, 0.4);
   
     pointer-events: none;
   
+    // 3. Forzar renderizado por GPU (Crucial para Vercel/Producción)
     transform: translateZ(0);
-    will-change: backdrop-filter;
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    
+    will-change: backdrop-filter, -webkit-backdrop-filter;
   }
 
   /* ----------------------------------
