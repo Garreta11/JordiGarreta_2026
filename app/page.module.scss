@@ -1,0 +1,206 @@
+.page {
+  position: relative;
+  width: 100%;
+  height: 100svh;
+
+  &__wrap {
+    display: none;
+  }
+
+  /* ----------------------------------
+     Background wrapper
+  ---------------------------------- */
+  &__wrapper {
+    width: 100dvw;
+    height: 100dvh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    background-color: transparent;
+    color: #fff;
+
+    &__bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      scale: 1.05; // subtle oversize to avoid edge bleed during drift
+      will-change: opacity;
+      animation: bgDrift 30s infinite linear;
+      transform-origin: center;
+    }
+
+    &__overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(100px);
+      -webkit-backdrop-filter: blur(100px);
+      z-index: 1;
+    }
+  }
+
+  /* ----------------------------------
+     Description block
+  ---------------------------------- */
+  &__description {
+    position: fixed;
+    padding: 1rem;
+    z-index: 2;
+    top: 0;
+    left: 0;
+    text-align: justify;
+    // Fluid type: scales from 1rem → 1.5rem across viewport widths
+    font-size: clamp(1rem, 1.5vw, 1.5rem);
+    line-height: 1.5;
+    opacity: 0;
+  }
+
+  /* ----------------------------------
+     Project info bar
+  ---------------------------------- */
+  &__project {
+    position: fixed;
+    padding: 1rem;
+    z-index: 2;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: center;
+
+    @media (max-width: 768px) {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    &__item {
+      // Base style shared across all four cells
+      font-size: clamp(0.75rem, 1vw, 0.9rem);
+      letter-spacing: 0.04em;
+
+      // Category — right-aligned, muted weight
+      &:nth-child(3) {
+        text-align: right;
+        opacity: 0.7;
+        text-transform: uppercase;
+        font-size: clamp(0.65rem, 0.85vw, 0.75rem);
+        letter-spacing: 0.1em;
+      }
+
+      // Year — right-aligned with flex for the link button sibling
+      &:nth-child(4) {
+        text-align: right;
+        display: flex;
+        justify-content: flex-end;
+        opacity: 0.7;
+        font-size: clamp(0.65rem, 0.85vw, 0.75rem);
+        letter-spacing: 0.1em;
+      }
+    }
+
+    &__title {
+      // Dominant element — slightly larger, tighter tracking
+      font-size: clamp(0.9rem, 1.25vw, 1.1rem);
+      letter-spacing: -0.01em;
+      font-weight: 500;
+      opacity: 1;
+    }
+
+    &__link {
+      display: flex;
+      justify-content: center;
+
+      &__button {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: clamp(0.7rem, 0.9vw, 0.8rem);
+        letter-spacing: 0.08em;
+        transition: gap 0.3s ease-in-out, opacity 0.2s ease;
+
+        // Sliding underline
+        &::after {
+          content: '';
+          position: absolute;
+          bottom: -3px;
+          left: 0;
+          width: 0;
+          height: 1px;
+          background: currentColor;
+          transition: width 0.35s ease;
+        }
+
+        &:hover {
+          gap: 1.25rem;
+          opacity: 0.85;
+
+          &::after {
+            width: 100%;
+          }
+        }
+      }
+    }
+
+    &__category {
+      // Alias handled via nth-child above; explicit class allows direct override
+    }
+
+    &__year {
+      // Alias handled via nth-child above; explicit class allows direct override
+    }
+  }
+
+  /* ----------------------------------
+     3D canvas container
+  ---------------------------------- */
+  &__container {
+    width: 100dvw;
+    height: 100dvh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    pointer-events: none;
+    opacity: 0;
+    perspective: 1000px;
+    transform-style: preserve-3d;
+    will-change: transform, opacity;
+  }
+}
+
+/* ----------------------------------
+   Keyframes
+---------------------------------- */
+
+// Slow ambient drift — keep translation small (2–4%) to avoid edges
+@keyframes bgDrift {
+  0% {
+    transform: rotate(0deg) translateX(0%) translateY(0%);
+  }
+  25% {
+    transform: rotate(1deg) translateX(2%) translateY(-1.5%);
+  }
+  50% {
+    transform: rotate(0deg) translateX(-2%) translateY(1.5%);
+  }
+  75% {
+    transform: rotate(-1deg) translateX(1.5%) translateY(-2%);
+  }
+  100% {
+    transform: rotate(0deg) translateX(0%) translateY(0%);
+  }
+}

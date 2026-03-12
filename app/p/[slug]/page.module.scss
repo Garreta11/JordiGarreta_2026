@@ -1,0 +1,252 @@
+.page {
+
+  /* ----------------------------------
+     Background wrapper
+  ---------------------------------- */
+  &__wrapper {
+    width: 100dvw;
+    height: 100dvh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    background-color: transparent;
+
+    &__bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      scale: 1.05; // minimal oversize — just enough to hide edge bleed
+      will-change: opacity, transform;
+    }
+
+    &__overlay {
+      position: absolute;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(100px);
+      -webkit-backdrop-filter: blur(100px);
+      z-index: 1;
+    }
+  }
+
+  /* ----------------------------------
+     Content shell — three-column layout
+  ---------------------------------- */
+  &__content {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: flex-start;
+    min-height: 100vh;
+
+    @media (max-width: 1024px) {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    @media (max-width: 640px) {
+      grid-template-columns: 1fr;
+    }
+
+    /* ----------------------------------
+       Left column — info
+    ---------------------------------- */
+    &__info {
+      position: sticky;
+      top: 0;
+      height: 100dvh;
+      padding: 2rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+
+      @media (max-width: 640px) {
+        position: static;
+        height: auto;
+        border-right: none;
+      }
+
+      &__back {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 3rem;
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        letter-spacing: 0.1em;
+        opacity: 0.6;
+        transition: gap 0.3s ease, opacity 0.2s ease;
+
+        svg {
+          transform: rotate(-135deg);
+          flex-shrink: 0;
+        }
+
+        &:hover {
+          gap: 1.25rem;
+          opacity: 1;
+        }
+      }
+
+      &__title {
+        font-size: clamp(2rem, 3.5vw, 4rem);
+        line-height: 1;
+        font-weight: 500;
+        letter-spacing: -0.02em;
+        margin-bottom: 2rem;
+      }
+
+      &__description {
+        font-size: clamp(0.85rem, 1vw, 0.95rem);
+        line-height: 1.7;
+        opacity: 0.8;
+        overflow-y: auto;
+      }
+    }
+
+    /* ----------------------------------
+       Centre column — media
+    ---------------------------------- */
+    &__media {
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+
+      @media (max-width: 1024px) {
+        // On tablet, media takes right column; details drops below
+        grid-row: 1;
+        grid-column: 2;
+      }
+
+      @media (max-width: 640px) {
+        grid-row: unset;
+        grid-column: unset;
+      }
+
+      &__item {
+        width: 100%;
+        overflow: hidden;
+        transition: opacity 0.3s ease;
+
+        &:hover {
+          opacity: 0.92;
+        }
+
+        &__image {
+          width: 100%;
+          height: auto;
+          object-fit: cover;
+          display: block;
+        }
+
+        &__video {
+          width: 100%;
+          height: auto;
+          object-fit: cover;
+          display: block;
+        }
+      }
+    }
+
+    /* ----------------------------------
+       Right column — details
+    ---------------------------------- */
+    &__details {
+      position: sticky;
+      top: 0;
+      height: 100dvh;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 2.5rem;
+
+      @media (max-width: 1024px) {
+        // Spans full width below the two columns above
+        grid-column: 1 / -1;
+        position: static;
+        height: auto;
+        min-height: unset;
+        border-left: none;
+        padding-bottom: 6rem;
+      }
+
+      @media (max-width: 640px) {
+        grid-column: unset;
+      }
+
+      &__table {
+        width: 100%;
+        border-collapse: collapse;
+
+        &__row {
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+          &:first-child {
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+          }
+        }
+
+        &__cell {
+          vertical-align: top;
+          padding: 0.75rem 0;
+          font-size: 0.75rem;
+          letter-spacing: 0.07em;
+
+          &:first-child {
+            text-transform: uppercase;
+            opacity: 0.45;
+            width: 40%;
+            padding-right: 1rem;
+          }
+
+          &:last-child {
+            opacity: 0.9;
+            line-height: 1.6;
+
+            p {
+              margin: 0;
+              line-height: 1.6;
+            }
+          }
+        }
+      }
+
+      &__link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        text-decoration: none;
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        letter-spacing: 0.1em;
+        position: relative;
+        transition: gap 0.3s ease, opacity 0.2s ease;
+
+        &::after {
+          content: '';
+          position: absolute;
+          bottom: -3px;
+          left: 0;
+          width: 0;
+          height: 1px;
+          background: currentColor;
+          transition: width 0.35s ease;
+        }
+
+        &:hover {
+          gap: 1.25rem;
+          opacity: 0.85;
+
+          &::after {
+            width: 100%;
+          }
+        }
+      }
+    }
+  }
+}

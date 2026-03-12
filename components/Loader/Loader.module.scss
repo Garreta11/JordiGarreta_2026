@@ -1,0 +1,47 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: var(--foreground);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  transition: opacity 0.6s ease;
+
+  &.exit {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+.bracket {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15em;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  letter-spacing: 0.1em;
+  color: var(--background);
+}
+
+.bracketLeft,
+.bracketRight {
+  color: var(--background);
+}
+
+.dot {
+  animation: pulse 1s ease-in-out infinite;
+  display: inline-block;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.1;
+    transform: scale(0.5);
+  }
+}

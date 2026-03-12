@@ -1,0 +1,195 @@
+.page {
+  &__wrapper {
+    width: 100dvw;
+    height: 100dvh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+
+    &__bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      scale: 1.05;
+      will-change: opacity, transform;
+    }
+
+    &__overlay {
+      position: absolute;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(100px);
+      -webkit-backdrop-filter: blur(100px);
+      z-index: 1;
+    }
+  }
+
+  &__content {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 0.6fr 1.4fr 1fr;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 0 2rem;
+
+    // Responsive unificado
+    @media (max-width: 1024px) {
+      display: flex;
+      flex-direction: column;
+      padding: 2rem 1.5rem 6rem;
+      gap: 3rem;
+    }
+
+    &__label {
+      text-transform: uppercase;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      opacity: 0.45;
+      margin-bottom: 1.5rem;
+      display: block;
+    }
+
+    &__group {
+      margin-bottom: 3.5rem;
+    }
+
+    // --- COLUMNA IZQUIERDA ---
+    &__stack {
+      position: sticky;
+      top: 0;
+      height: 100dvh;
+      padding: 2rem 0;
+      display: flex;
+      flex-direction: column;
+
+      @media (max-width: 1024px) {
+        position: static;
+        height: auto;
+        padding: 0;
+      }
+    }
+
+    &__back {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 4rem;
+      text-transform: uppercase;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      opacity: 0.6;
+      background: none;
+      border: none;
+      color: inherit;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      svg { transform: rotate(-135deg); transition: transform 0.3s; }
+      &:hover { 
+        gap: 1.25rem; 
+        opacity: 1;
+        svg { transform: rotate(-135deg) translate(2px, -2px); }
+      }
+    }
+
+    &__title {
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      line-height: 1;
+      font-weight: 500;
+      margin-bottom: 3rem;
+    }
+
+    &__list {
+      list-style: none;
+      padding: 0;
+      li { font-size: 0.85rem; margin-bottom: 0.5rem; opacity: 0.8; }
+    }
+
+    // --- COLUMNA CENTRAL ---
+    &__info {
+      padding: 2rem 0;
+      margin-top: 10rem; 
+
+      @media (max-width: 1024px) {
+        margin-top: 0;
+        padding: 0;
+      }
+
+      &__description {
+        font-size: clamp(1rem, 1.1vw, 1.2rem);
+        line-height: 1.7;
+        opacity: 0.9;
+        max-width: 55ch;
+        p { margin-bottom: 1.5rem; }
+      }
+    }
+
+    // --- COLUMNA DERECHA ---
+    &__details {
+      position: sticky;
+      top: 0;
+      height: 100dvh;
+      padding: 2rem 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end; 
+
+      @media (max-width: 1024px) {
+        position: static;
+        height: auto;
+        padding: 0;
+      }
+
+      &__table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 3rem;
+        &__row { border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+        &__cell {
+          padding: 1rem 0;
+          font-size: 0.75rem;
+          letter-spacing: 0.07em;
+          text-transform: uppercase;
+        }
+      }
+
+      &__footer {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        @media (max-width: 640px) {
+          grid-template-columns: 1fr;
+          gap: 2.5rem;
+        }
+      }
+    }
+
+    // Estilos compartidos para links de Contacto y Social
+    &__contact, &__social {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+
+      &__item {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        text-decoration: none;
+        color: inherit;
+        opacity: 0.5;
+        transition: opacity 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        
+        svg { opacity: 0.5; transition: transform 0.3s; }
+        &:hover { 
+          opacity: 1; 
+        }
+      }
+    }
+  }
+}

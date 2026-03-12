@@ -1,0 +1,69 @@
+:root {
+  --background: #F4F4F6;
+  --foreground: #202123;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  user-select: none;
+  font-family: var(--font-geist-mono);
+  color: var(--background);
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+html, body {
+  background-color: var(--foreground);
+}
+
+a {
+  position: relative;
+  text-decoration: none;
+  color: inherit;
+  width: fit-content;
+
+  &.underline {
+    &::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0%;
+      height: 1px;
+      background-color: var(--background);
+      transition: width 0.3s ease-in-out;
+    }
+  
+    &:hover {
+      &::after {
+        width: 100%;
+      }
+    }
+  }
+
+}
+
+button {
+  position: relative;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+}
+
+html.lenis {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
