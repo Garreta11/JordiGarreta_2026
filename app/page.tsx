@@ -279,8 +279,8 @@ export default function Home() {
                 style={{ backgroundImage: img ? `url(${img})` : "none" }}
               />
             ))}
-            <div className={styles.page__wrapper__overlay} />
           </div>
+          <div className={styles.page__overlay} />
 
           <div ref={descriptionRef} className={styles.page__description}>
             <PortableText value={description} />
