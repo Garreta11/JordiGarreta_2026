@@ -109,8 +109,8 @@ export const slideOutPostContent = (
 export const fadeInBg = (bgEl: HTMLElement) => {
   return gsap.fromTo(
     bgEl,
-    { opacity: 0, scale: 1.05 },
-    { opacity: 1, scale: 3, duration: 0.9, ease: "expo.out" }
+    { opacity: 0, scale: 0 },
+    { opacity: 1, scale: 1.05, duration: 0.9, ease: "expo.out" }
   );
 };
 
