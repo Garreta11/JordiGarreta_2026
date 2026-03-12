@@ -116,8 +116,8 @@ export default function PostPage({
                 backgroundImage: bgUrl ? `url(${bgUrl})` : "none",
               }}
             />
-            <div className={styles.page__wrapper__overlay} />
           </div>
+          <div className={styles.page__overlay} />
 
           <div className={styles.page__content}>
             {/* Info block */}

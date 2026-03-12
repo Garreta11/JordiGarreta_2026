@@ -21,15 +21,31 @@
       scale: 1.05; // minimal oversize — just enough to hide edge bleed
       will-change: opacity, transform;
     }
+  }
 
-    &__overlay {
-      position: absolute;
-      inset: 0;
-      background-color: rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(100px);
-      -webkit-backdrop-filter: blur(100px);
-      z-index: 1;
-    }
+  &__overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  
+    // 1. Prefijo y filtro estándar
+    -webkit-backdrop-filter: blur(100px);
+    backdrop-filter: blur(100px);
+  
+    // 2. Fondo semi-transparente (ajusta el alpha según necesites)
+    background: rgba(0, 0, 0, 0.4);
+  
+    pointer-events: none;
+  
+    // 3. Forzar renderizado por GPU (Crucial para Vercel/Producción)
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    
+    will-change: backdrop-filter, -webkit-backdrop-filter;
   }
 
   /* ----------------------------------
