@@ -270,6 +270,7 @@ export default function Home() {
       {currentPost && (
         <>
           <div ref={wrapperRef} className={styles.page__wrapper}>
+            <div className={styles.page__wrapper__bg} />
             {bgImages.map((img, i) => (
               <div
                 key={i}

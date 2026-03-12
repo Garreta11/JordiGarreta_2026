@@ -30,6 +30,7 @@
       will-change: transform;
       //animation: bgDrift 30s infinite linear;
       transform-origin: center;
+      background-color: var(--foreground);
     }
 
     &__overlay {
