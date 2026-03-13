@@ -185,6 +185,7 @@ export default function PostPage({
                         autoPlay
                         muted
                         loop
+                        playsInline
                         className={styles.page__content__media__item__video}
                       />
                     )}
