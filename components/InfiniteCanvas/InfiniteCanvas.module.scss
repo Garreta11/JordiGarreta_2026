@@ -44,6 +44,10 @@
     object-fit: cover;
     display: block;
     pointer-events: none;
+    @media (max-width: 768px) {
+      pointer-events: auto; /* Required for controls to work */
+      touch-action: pan-y;   /* Allows vertical scrolling if needed, or set to none */
+    }
   }
 }
 

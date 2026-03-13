@@ -22,8 +22,7 @@ export default function AboutPage() {
   useEffect(() => {
     const fetchAbout = async () => {
       const data = await client.fetch(aboutQueries.all);
-      console.log(data);
-      setAbout(data);
+      setAbout(data as About);
     };
     fetchAbout();
   }, []);
@@ -52,14 +51,10 @@ export default function AboutPage() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.page__wrapper}>
-        <div 
-          ref={bgRef} 
-          className={styles.page__wrapper__bg} 
-          style={{ backgroundImage: `url('/path-to-your-about-bg.jpg')` }} 
-        />
+      {/* <div className={styles.page__wrapper}>
+        <video src={videoUrlFor(about?.video as SanityFileSource)} autoPlay muted loop />
         <div className={styles.page__wrapper__overlay} />
-      </div>
+      </div> */}
 
       <div className={styles.page__content}>
         

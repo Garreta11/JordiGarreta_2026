@@ -39,4 +39,5 @@ export interface About {
   achievements: { award: string; result: string }[];
   email: string;
   phone: string;
+  video: SanityFileSource;
 }

@@ -60,37 +60,51 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
 
     function createImageGrid() {
       const container = containerRef.current!;
-      container.innerHTML = ''; // Clear previous
+      container.innerHTML = '';
       rowArray = [];
       imgRep = [];
-
+    
+      // Check for touch/mobile device
+      const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    
       for (let y = 0; y < rowNum; y++) {
         const row = document.createElement('div');
         row.className = styles.row;
         row.dataset.offset = y % 2 === 0 ? 'false' : 'true';
         const rowImgs: HTMLDivElement[] = [];
-
+    
         for (let x = 0; x < imgNum; x++) {
           const media = cellMedia[y * imgNum + x];
           const lab = labs[(y * imgNum + x) % labs.length];
           const cell = document.createElement('div');
           cell.className = styles.sliderImage;
-
+    
           if (media.type === 'video') {
             const video = document.createElement('video');
             video.src = media.url;
             video.muted = true;
             video.loop = true;
             video.playsInline = true;
+    
+            if (isMobile) {
+              // On mobile: show controls and don't rely on hover
+              video.controls = true;
+              // Set muted to false by default on mobile if you want sound 
+              // (though most browsers require a click to play with sound)
+              video.muted = false; 
+            } else {
+              // On desktop: keep hover logic
+              cell.addEventListener('mouseenter', () => video.play());
+              cell.addEventListener('mouseleave', () => video.pause());
+            }
+    
             video.addEventListener('canplay', onMediaLoaded, { once: true });
             cell.appendChild(video);
-            cell.addEventListener('mouseenter', () => video.play());
-            cell.addEventListener('mouseleave', () => video.pause());
           } else {
             cell.style.backgroundImage = `url(${media.url})`;
             onMediaLoaded();
           }
-
+    
           const title = document.createElement('div');
           title.className = styles.cellTitle;
           title.textContent = `${lab.title} - ${lab.tech ?? ''}`;
@@ -219,14 +233,13 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
         // Vertical Screen (Mobile)
         boxHeight = vh * 0.35; // Use 35% of height as base
         boxWidth = boxHeight; // Portrait aspect ratio
+        gutter = vw * 0.05;
       } else {
         // Horizontal Screen (Desktop)
         boxWidth = vw * 0.35; // Use 35% of width as base
         boxHeight = boxWidth * 0.7; // Landscape aspect ratio
+        gutter = vw * 0.01;
       }
-    
-      // 2. Adjust spacing based on new dimensions
-      gutter = vw * 0.05; // Responsive gutter
       horizSpacing = boxWidth + gutter;
       vertSpacing = boxHeight + gutter;
     

@@ -12,6 +12,13 @@ export default defineType({
       hidden: true,
     }),
     defineField({
+      name: "video",
+      type: "file",
+      options: {
+        accept: "video/*",
+      },
+    }),
+    defineField({
       name: "description",
       type: "array",
       of: [{ type: "block" }],
