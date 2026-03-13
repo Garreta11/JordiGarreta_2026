@@ -61,6 +61,7 @@
 
     @media (max-width: 1024px) {
       grid-template-columns: 1fr 1fr;
+      padding-bottom: 8rem;
     }
 
     @media (max-width: 640px) {
@@ -83,6 +84,7 @@
         position: static;
         height: auto;
         border-right: none;
+        padding: 1rem;
       }
 
       &__back {
@@ -136,6 +138,7 @@
         // On tablet, media takes right column; details drops below
         grid-row: 1;
         grid-column: 2;
+        padding: 1rem;
       }
 
       @media (max-width: 640px) {
@@ -188,7 +191,7 @@
         height: auto;
         min-height: unset;
         border-left: none;
-        padding-bottom: 6rem;
+        padding: 1rem;
       }
 
       @media (max-width: 640px) {

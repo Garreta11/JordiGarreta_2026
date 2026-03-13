@@ -114,7 +114,7 @@ export default function AboutPage() {
           {/* NEW WRAPPER: Contact & Social en dos columnas */}
           <div className={styles.page__content__details__footer}>
             
-            <div className={styles.page__content__group}>
+            {/* <div className={styles.page__content__group}>
               <h3 className={styles.page__content__label}>Contact</h3>
               <div className={styles.page__content__contact}>
                 <a href={`mailto:${about?.email}`} className={styles.page__content__contact__item}>
@@ -124,7 +124,7 @@ export default function AboutPage() {
                   {about?.phone}
                 </a>
               </div>
-            </div>
+            </div> */}
 
             <div className={styles.page__content__group}>
               <h3 className={styles.page__content__label}>Social</h3>
