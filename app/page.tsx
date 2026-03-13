@@ -29,8 +29,10 @@ export default function Home() {
 
   const sketchRef = useRef<InfiniteSlider | null>(null);
   const rafRef = useRef<number | null>(null);
+  
   const radiusRef = useRef(3);
   const positionRef = useRef(0);
+  const spacingRef = useRef(0.5);
 
   const bgRef1 = useRef<HTMLDivElement>(null);
   const bgRef2 = useRef<HTMLDivElement>(null);
@@ -114,7 +116,6 @@ export default function Home() {
     sketchRef.current = sketch;
 
     const loops = 4;
-    const verticalSpacing = 0.5;
     let lastScroll = 0;
     let smoothVelocity = 0;
 
@@ -133,17 +134,21 @@ export default function Home() {
       positionRef.current = position;
       setCurrentPost(infinitePosts[Math.round(position)]);
 
-      const mappedVelocity = mapValue(Math.abs(smoothVelocity), 0, 0.5, 0, 1);
-      const clampedVelocity = Math.max(0, Math.min(1, mappedVelocity));
+      const mappedVelocity = mapValue(Math.abs(smoothVelocity), 0, 15, 0, 5);
 
       const minRadius = 1;
-      const maxRadius = 1.2;
-      const targetRadius = minRadius + clampedVelocity * (maxRadius - minRadius);
-
-      const lerpSpeed = clampedVelocity < 0.05 ? 0.15 : 0.05;
+      const maxRadius = 1.5;
+      const minSpacing = 0.5;
+      const maxSpacing = 0.7;
+      
+      const targetRadius = minRadius + mappedVelocity * (maxRadius - minRadius);
+      const targetSpacing = minSpacing + mappedVelocity * (maxSpacing - minSpacing);
+      
+      const lerpSpeed = 0.15;
       radiusRef.current += (targetRadius - radiusRef.current) * lerpSpeed;
+      spacingRef.current += (targetSpacing - spacingRef.current) * lerpSpeed;
 
-      sketchRef.current.updateMeshes(position, loops, verticalSpacing, radiusRef.current);
+      sketchRef.current.updateMeshes(position, loops, spacingRef.current, radiusRef.current);
       sketchRef.current.getVelocity(smoothVelocity);
 
       rafRef.current = requestAnimationFrame(animate);
@@ -264,7 +269,7 @@ export default function Home() {
     <div className={styles.page}>
       <Loader isLoading={isLoading} />
 
-      <div style={{ height: `${posts.length * 200}vh` }} />
+      <div style={{ height: `${posts.length * 100}vh` }} />
 
       <div className={styles.page__wrap}>
         {infinitePosts.map((post, index) => (

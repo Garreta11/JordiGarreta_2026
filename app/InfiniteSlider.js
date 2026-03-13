@@ -25,7 +25,7 @@ export default class InfiniteSlider {
     this.container.appendChild(this.renderer.domElement);
 
     this.camera = new THREE.PerspectiveCamera(70, this.width / this.height, 0.1, 1000);
-    this.camera.position.set(0, 0, 4);
+    this.camera.position.set(0, 0, 5);
 
     const ambient = new THREE.AmbientLight(0xffffff, 1);
     this.scene.add(ambient);

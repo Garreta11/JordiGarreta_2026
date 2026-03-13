@@ -20,6 +20,14 @@ export interface Post {
     url: string;
   }[];
   description: PortableTextBlock[];
+  next: {
+    title: string;
+    slug: string;
+  };
+  prev: {
+    title: string;
+    slug: string;
+  };
 }
 
 export interface Lab {

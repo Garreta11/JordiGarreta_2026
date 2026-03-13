@@ -16,7 +16,15 @@ export const postQueries = {
       description,
       mainImage,
       basicInfo,
-      media
+      media,
+      "next": *[_type == "post" && orderRank > ^.orderRank] | order(orderRank asc)[0] { 
+        title, 
+        "slug": slug.current 
+      },
+      "prev": *[_type == "post" && orderRank < ^.orderRank] | order(orderRank desc)[0] { 
+        title, 
+        "slug": slug.current 
+      }
     }
   `,
 };
