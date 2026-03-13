@@ -112,6 +112,7 @@ export default function PostPage({
             <div
               ref={bgRef}
               className={styles.page__wrapper__bg}
+              data-anim="post-bg"
               style={{
                 backgroundImage: bgUrl ? `url(${bgUrl})` : "none",
               }}
@@ -125,6 +126,7 @@ export default function PostPage({
               ref={infoRef}
               className={styles.page__content__info}
               style={{ opacity: 0 }}
+              data-anim="post-info"
             >
               {/* Go back — now a button */}
               <button
@@ -170,6 +172,7 @@ export default function PostPage({
                     ref={(el) => {
                       if (el) mediaItemsRef.current[index] = el;
                     }}
+                    data-anim="post-media"
                   >
                     {media["_type"] === "image" ? (
                       <Image
@@ -197,6 +200,7 @@ export default function PostPage({
             {/* Details */}
             <div
               ref={detailsRef}
+              data-anim="post-details"
               className={styles.page__content__details}
               style={{ opacity: 0 }}
             >

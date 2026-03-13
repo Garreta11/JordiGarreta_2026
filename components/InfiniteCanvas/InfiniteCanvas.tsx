@@ -78,6 +78,7 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
           const lab = labs[(y * imgNum + x) % labs.length];
           const cell = document.createElement('div');
           cell.className = styles.sliderImage;
+          cell.dataset.anim = 'lab-el';
     
           if (media.type === 'video') {
             const video = document.createElement('video');

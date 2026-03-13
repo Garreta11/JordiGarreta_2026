@@ -157,21 +157,14 @@ export const postPageIntro = (
    ---------------------------------- */
 
    export const aboutPageIntro = (
-    bgEl: HTMLElement,
     stackEl: HTMLElement,
     descEl: HTMLElement,
     achievementsEl: HTMLElement
   ) => {
     const tl = gsap.timeline();
-    
-    tl.fromTo(bgEl, 
-      { opacity: 0, scale: 1.1 }, 
-      { opacity: 1, scale: 1.05, duration: 1.2, ease: "expo.out" }
-    )
-    .fromTo(stackEl, 
+    tl.fromTo(stackEl, 
       { opacity: 0, x: -40 }, 
       { opacity: 1, x: 0, duration: 0.9, ease: "expo.out" }, 
-      "-=0.8"
     )
     .fromTo(descEl, 
       { opacity: 0, y: 30 }, 
@@ -193,7 +186,6 @@ export const postPageIntro = (
   
   export const aboutPageExit = (
     els: HTMLElement[],
-    bgEl: HTMLElement,
     onComplete: () => void
   ) => {
     const tl = gsap.timeline({ onComplete });
@@ -205,12 +197,25 @@ export const postPageIntro = (
       stagger: 0.05,
       ease: "power2.inOut"
     })
-    .to(bgEl, {
-      opacity: 0,
-      scale: 1,
-      duration: 0.5,
-      ease: "power2.inOut"
-    }, "-=0.3");
   
+    return tl;
+  };
+
+  /* ----------------------------------
+     LAB EXIT
+     ---------------------------------- */
+
+  export const labExit = (
+    els: HTMLElement[],
+    onComplete: () => void
+  ) => {
+    const tl = gsap.timeline({ onComplete });
+    tl.to(els, {
+      opacity: 0,
+      y: -20,
+      duration: 0.5,
+      stagger: 0.05,
+      ease: "power2.inOut"
+    })
     return tl;
   };

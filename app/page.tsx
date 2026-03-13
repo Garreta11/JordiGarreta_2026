@@ -214,6 +214,20 @@ export default function Home() {
     img.src = nextImageUrl;
   }, [currentPost]);
 
+  useEffect(() => {
+    window.exitHomeSketch = (callback: () => void) => {
+      if (sketchRef.current) {
+        sketchRef.current.exitAnimation(positionRef.current, callback);
+      } else {
+        callback();
+      }
+    };
+  
+    return () => {
+      window.exitHomeSketch = undefined; // Limpieza segura
+    };
+  }, []);
+
   /* ----------------------------------
      Exit transition
   ---------------------------------- */
@@ -270,23 +284,23 @@ export default function Home() {
       {currentPost && (
         <>
           <div ref={wrapperRef} className={styles.page__wrapper}>
-            <div className={styles.page__wrapper__bg} />
             {bgImages.map((img, i) => (
               <div
                 key={i}
                 ref={bgRefs[i]}
                 className={styles.page__wrapper__bg}
+                data-anim="bg"
                 style={{ backgroundImage: img ? `url(${img})` : "none" }}
               />
             ))}
           </div>
           <div className={styles.page__overlay} />
 
-          <div ref={descriptionRef} className={styles.page__description}>
+          <div ref={descriptionRef} className={styles.page__description} data-anim="description">
             <PortableText value={description} />
           </div>
 
-          <div ref={projectRef} className={styles.page__project}>
+          <div ref={projectRef} className={styles.page__project} data-anim="project">
             <p className={`${styles.page__project__item} ${styles.page__project__title}`}>
               {currentPost.title}
             </p>

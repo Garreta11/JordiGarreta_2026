@@ -14,7 +14,6 @@ export default function AboutPage() {
   const router = useRouter();
   const [about, setAbout] = useState<About | null>(null);
 
-  const bgRef = useRef<HTMLDivElement>(null);
   const stackColRef = useRef<HTMLDivElement>(null);
   const descColRef = useRef<HTMLDivElement>(null);
   const achievementsColRef = useRef<HTMLDivElement>(null);
@@ -29,9 +28,8 @@ export default function AboutPage() {
 
   // Disparamos la intro cuando 'about' ya tiene datos
   useEffect(() => {
-    if (about && bgRef.current && stackColRef.current && descColRef.current && achievementsColRef.current) {
+    if (about && stackColRef.current && descColRef.current && achievementsColRef.current) {
       aboutPageIntro(
-        bgRef.current,
         stackColRef.current,
         descColRef.current,
         achievementsColRef.current
@@ -40,10 +38,9 @@ export default function AboutPage() {
   }, [about]);
 
   const handleBack = () => {
-    if (bgRef.current && stackColRef.current && descColRef.current && achievementsColRef.current) {
+    if (stackColRef.current && descColRef.current && achievementsColRef.current) {
       aboutPageExit(
         [stackColRef.current, descColRef.current, achievementsColRef.current],
-        bgRef.current,
         () => router.push("/")
       );
     }
@@ -59,7 +56,7 @@ export default function AboutPage() {
       <div className={styles.page__content}>
         
         {/* IZQUIERDA: BACK + TITLE + STACK */}
-        <div ref={stackColRef} className={styles.page__content__stack}>
+        <div ref={stackColRef} className={styles.page__content__stack} data-anim="about-el">
           <button onClick={handleBack} className={styles.page__content__back}>
             <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
               <path d="M15.707 0.999999C15.707 0.447715 15.2593 -2.87362e-07 14.707 -5.40243e-07L5.70703 2.60547e-07C5.15475 -7.66277e-08 4.70703 0.447715 4.70703 1C4.70703 1.55228 5.15475 2 5.70703 2L13.707 2L13.707 10C13.707 10.5523 14.1547 11 14.707 11C15.2593 11 15.707 10.5523 15.707 10L15.707 0.999999ZM0.707031 15L1.41414 15.7071L15.4141 1.70711L14.707 1L13.9999 0.292893L-7.55191e-05 14.2929L0.707031 15Z" fill="white"/>
@@ -80,14 +77,14 @@ export default function AboutPage() {
         </div>
 
         {/* CENTRO: BIO (MÁS ANCHA) */}
-        <div ref={descColRef} className={styles.page__content__info}>
+        <div ref={descColRef} className={styles.page__content__info} data-anim="about-el">
           <div className={styles.page__content__info__description}>
             <PortableText value={about?.description || []} />
           </div>
         </div>
 
         {/* DERECHA: ACHIEVEMENTS + (CONTACT & SOCIAL) */}
-        <div ref={achievementsColRef} className={styles.page__content__details}>
+        <div ref={achievementsColRef} className={styles.page__content__details} data-anim="about-el">
           
           {/* Achievements Section */}
           <div className={styles.page__content__group}>

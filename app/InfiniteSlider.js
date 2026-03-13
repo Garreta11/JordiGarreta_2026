@@ -3,18 +3,11 @@ import fragment from './shaders/fragment.glsl';
 import vertex from './shaders/vertex.glsl';
 import { urlFor } from "@/lib/sanity.image";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { AfterimagePass } from 'three/examples/jsm/postprocessing/AfterimagePass.js';
 
 import gsap from 'gsap';
-
-const mapValue = (value, min, max, newMin, newMax) => {
-  return (value - min) / (max - min) * (newMax - newMin) + newMin;
-}
 
 export default class InfiniteSlider {
   constructor(options) {
