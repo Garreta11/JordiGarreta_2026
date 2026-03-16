@@ -145,6 +145,7 @@ export default function PostPage({
                   <tr className={styles.page__content__details__table__row}><td className={styles.page__content__details__table__cell}>Type</td><td className={styles.page__content__details__table__cell}>{post.basicInfo.category}</td></tr>
                   <tr className={styles.page__content__details__table__row}><td className={styles.page__content__details__table__cell}>Role</td><td className={styles.page__content__details__table__cell}>{post.basicInfo.role}</td></tr>
                   <tr className={styles.page__content__details__table__row}><td className={styles.page__content__details__table__cell}>Year</td><td className={styles.page__content__details__table__cell}>{post.basicInfo.year}</td></tr>
+                  <tr className={styles.page__content__details__table__row}><td className={styles.page__content__details__table__cell}>Tools</td><td className={styles.page__content__details__table__cell}>{post.basicInfo.tools.join(", ")}</td></tr>
                 </tbody>
               </table>
 
