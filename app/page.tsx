@@ -98,7 +98,8 @@ export default function Home() {
 
   const infinitePosts = useMemo(() => {
     if (!posts || posts.length === 0) return [];
-    return [...posts, posts[0]];
+    // return [...posts, posts[0]];
+    return posts;
   }, [posts]);
 
   /* ----------------------------------

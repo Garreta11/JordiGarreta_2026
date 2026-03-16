@@ -214,7 +214,7 @@ export const postPageIntro = (
       opacity: 0,
       y: -20,
       duration: 0.5,
-      stagger: 0.05,
+      stagger: 0.01,
       ease: "power2.inOut"
     })
     return tl;

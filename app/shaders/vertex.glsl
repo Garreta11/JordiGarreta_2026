@@ -1,7 +1,4 @@
-uniform float time;
-uniform float distanceFromCenter;
 uniform float spiralAngle;
-uniform float spiralHeight;
 uniform float uRadius;
 uniform float uPlaneAspect;   // add this: width / height of the plane geometry
 uniform float uTextureAspect; // add this: texture width / height

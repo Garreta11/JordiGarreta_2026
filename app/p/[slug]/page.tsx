@@ -100,12 +100,13 @@ export default function PostPage({
               ref={bgRef}
               className={styles.page__wrapper__bg}
               style={{ backgroundImage: bgUrl ? `url(${bgUrl})` : "none" }}
+              data-anim="post-bg"
             />
           </div>
           <div className={styles.page__overlay} />
 
           <div className={styles.page__content}>
-            <div ref={infoRef} className={styles.page__content__info} style={{ opacity: 0 }}>
+            <div ref={infoRef} className={styles.page__content__info} style={{ opacity: 0 }} data-anim="post-info">
               <button onClick={() => navigateTo("/")} className={styles.page__content__info__back}>
                 <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
                   <path d="M15.707 0.999999C15.707 0.447715 15.2593 -2.87362e-07 14.707 -5.40243e-07L5.70703 2.60547e-07C5.15475 -7.66277e-08 4.70703 0.447715 4.70703 1C4.70703 1.55228 5.15475 2 5.70703 2L13.707 2L13.707 10C13.707 10.5523 14.1547 11 14.707 11C15.2593 11 15.707 10.5523 15.707 10L15.707 0.999999ZM0.707031 15L1.41414 15.7071L15.4141 1.70711L14.707 1L13.9999 0.292893L-7.55191e-05 14.2929L0.707031 15Z" fill="currentColor"/>
@@ -126,7 +127,7 @@ export default function PostPage({
               {post.media.map((media, index) => {
                 const src = media["_type"] === "image" ? urlFor(media).url() : videoUrlFor(media as any);
                 return (
-                  <div key={index} className={styles.page__content__media__item} ref={(el) => { if (el) mediaItemsRef.current[index] = el; }}>
+                  <div key={index} className={styles.page__content__media__item} ref={(el) => { if (el) mediaItemsRef.current[index] = el; }} data-anim="post-media">
                     {media["_type"] === "image" ? (
                       <Image src={src} alt={post.title} width={800} height={800} className={styles.page__content__media__item__image} />
                     ) : (
@@ -137,7 +138,7 @@ export default function PostPage({
               })}
             </div>
 
-            <div ref={detailsRef} className={styles.page__content__details} style={{ opacity: 0 }}>
+            <div ref={detailsRef} className={styles.page__content__details} style={{ opacity: 0 }} data-anim="post-details">
               <table className={styles.page__content__details__table}>
                 <tbody>
                   <tr className={styles.page__content__details__table__row}><td className={styles.page__content__details__table__cell}>Client</td><td className={styles.page__content__details__table__cell}>{post.basicInfo.client}</td></tr>

@@ -74,7 +74,7 @@ export default class InfiniteSlider {
         uRadius: { value: 1 },
         uPlaneAspect: { value: 1.5 },
         uTextureAspect: { value: 1.0 },
-        progress: { value: 0.1 },
+        opacity: { value: 1.0 },
       },
       vertexShader: vertex,
       fragmentShader: fragment,
@@ -269,9 +269,9 @@ export default class InfiniteSlider {
     });
   
     this.meshes.forEach((mesh, i) => {
-      gsap.to(mesh.material.uniforms.progress, {
+      gsap.to(mesh.material.uniforms.opacity, {
         value: 0,
-        duration: 0.8,
+        duration: 1,
         ease: "power2.in",
         delay: i * 0.03,
       });
