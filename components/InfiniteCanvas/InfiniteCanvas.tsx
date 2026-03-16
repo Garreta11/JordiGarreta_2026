@@ -281,10 +281,44 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
       onPress: () => gsap.killTweensOf(containerRef.current),
     });
 
+    // --- NEW WHEEL/TRACKPAD LOGIC START ---
+    const handleWheel = (e: WheelEvent) => {
+      // Prevent default browser behavior (like "swipe to go back")
+      e.preventDefault();
+
+      // Kill any active inertia throws if the user starts scrolling
+      gsap.killTweensOf(containerRef.current);
+
+      // Get current positions
+      const curX = gsap.getProperty(containerRef.current, "x") as number;
+      const curY = gsap.getProperty(containerRef.current, "y") as number;
+
+      // Update positions based on scroll delta
+      // deltaX/Y are standard for trackpads; we subtract to move the "canvas" 
+      // in the direction of the finger swipe
+      gsap.set(containerRef.current, {
+        x: curX - e.deltaX,
+        y: curY - e.deltaY,
+        onComplete: updateCenterElem // Trigger the infinite recycling
+      });
+
+      // Also call it immediately for smoother recycling during fast scrolls
+      updateCenterElem();
+    };
+
+    const containerWrapper = containerRef.current.parentElement;
+    if (containerWrapper) {
+      containerWrapper.addEventListener('wheel', handleWheel, { passive: false });
+    }
+    // --- NEW WHEEL/TRACKPAD LOGIC END ---
+
     window.addEventListener('resize', resize);
 
     return () => {
       window.removeEventListener('resize', resize);
+      if (containerWrapper) {
+        containerWrapper.removeEventListener('wheel', handleWheel);
+      }
       dragger[0].kill();
     };
   }, [labs]);
