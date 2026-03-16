@@ -116,7 +116,7 @@ export default function Home() {
 
     sketchRef.current = sketch;
 
-    const loops = 4;
+    const loops = 4.5;
     let lastScroll = 0;
     let smoothVelocity = 0;
 

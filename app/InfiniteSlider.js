@@ -260,7 +260,7 @@ export default class InfiniteSlider {
       duration: 1.4,
       ease: "expo.in",
       onUpdate: () => {
-        this.updateMeshes(target.position, 4, target.spacing, 1);
+        this.updateMeshes(target.position, 4.5, target.spacing, 1);
       },
       onComplete: () => {
         // Small delay lets Next.js prepare the incoming page

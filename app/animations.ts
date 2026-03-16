@@ -147,8 +147,8 @@ export const postPageIntro = (
   const tl = gsap.timeline();
   tl.add(fadeInBg(bgEl))
     .add(fadeInInfo(infoEl))
-    .add(fadeInMedia(mediaItems), "-=0.5")
-    .add(fadeInDetails(detailsEl), "-=0.6");
+    .add(fadeInMedia(mediaItems), "-=0.9")
+    .add(fadeInDetails(detailsEl), "-=1.5");
   return tl;
 };
 
