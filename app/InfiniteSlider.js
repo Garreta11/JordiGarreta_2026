@@ -28,9 +28,7 @@ export default class InfiniteSlider {
     this.camera.position.set(0, 0, 5);
 
     const ambient = new THREE.AmbientLight(0xffffff, 1);
-    this.scene.add(ambient);
-    
-    // this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.scene.add(ambient);    
 
     this.loader = new THREE.TextureLoader();
     this.gltfLoader = new GLTFLoader();
@@ -38,6 +36,8 @@ export default class InfiniteSlider {
     this.mouse = new THREE.Vector2();
     this.time = 0;
     this.isPlaying = true;
+
+    this.introProgress = 0; // 0 = flat, 1 = spiral
 
     this.meshes = [];
     this.materials = [];
@@ -55,10 +55,8 @@ export default class InfiniteSlider {
 
     // Store bound references so they can be removed later
     this._onClick = this.setupClick.bind(this);
-    this._onMouseMove = this.handleMouseMove.bind(this);
 
     window.addEventListener('click', this._onClick, false);
-    window.addEventListener('mousemove', this._onMouseMove, false);
   }
 
   addObjects() {
@@ -139,62 +137,50 @@ export default class InfiniteSlider {
     );
   }
 
-  updateMeshes(position = 0, loops = 2, verticalSpacing = 4, radius = 5) {
-    const objs = Array(this.meshes.length).fill({});
-
-    objs.forEach((_, i) => {
-      const t = i - position;
-      const angle = (t / objs.length) * Math.PI * 2 * loops;
-      const height = -t * verticalSpacing;
-
-      const mesh = this.meshes[i];
-      mesh.position.set(0, height, 0);
-      mesh.material.uniforms.distanceFromCenter.value = 1 - Math.min(Math.abs(t), 1) ** 2;
-      mesh.material.uniforms.spiralAngle.value = angle;
-      mesh.material.uniforms.spiralHeight.value = height;
-
-      mesh.material.uniforms.uRadius.value = radius;
+  updateMeshes(position = 0, loops = 2, verticalSpacing = 0.5, radius = 1) {
+    const count = this.meshes.length;
+    const t = this.introProgress;
+  
+    // Auto-fit the flat row to the camera's visible width at z=0
+    const fovRad = (70 * Math.PI) / 180;
+    const visibleWidth = 2 * Math.tan(fovRad / 2) * this.camera.position.z;
+    const gap = (visibleWidth * 0.85) / (count - 1); // 85% of screen width
+  
+    const totalWidth = (count - 1) * gap;
+  
+    this.meshes.forEach((mesh, i) => {
+      const delta = i - position;
+      const angle = (delta / count) * Math.PI * 2 * loops;
+      const spiralY = -delta * verticalSpacing;
+      const flatX = i * gap - totalWidth / 2;
+  
+      mesh.position.x = flatX * (1 - t);
+      mesh.position.y = (flatX * 0 + (spiralY - 0) * t); // flatY = 0
+      mesh.position.z = 0;
+  
+      mesh.material.uniforms.spiralAngle.value = angle * t;
+      mesh.material.uniforms.uRadius.value     = radius * t;
+      mesh.material.uniforms.distanceFromCenter.value =
+        t * (1 - Math.min(Math.abs(delta), 1) ** 2);
+      mesh.material.uniforms.spiralHeight.value = spiralY * t;
     });
   }
+
+  introAnimation(onComplete) {
+    const target = { progress: 0 };
   
-  handleMouseMove(e) {
-    this.mouse.x = (e.clientX / this.width) * 2 - 1;
-    this.mouse.y = -(e.clientY / this.height) * 2 + 1;
-
-    // Rotate model
-    if (this.model) {
-      gsap.to(this.model.rotation, {
-        y: this.mouse.x * 0.5,
-        x: -this.mouse.y * 0.5,
-        duration: 1,
-      });
-    }
-
-    if (!this.meshes || this.meshes.length === 0) return;
-
-    // Raycast to find hovered mesh
-    this.raycaster.setFromCamera(this.mouse, this.camera);
-    const intersects = this.raycaster.intersectObjects(this.meshes);
-
-    // Track which mesh is currently hovered
-    const hoveredMesh = intersects.length > 0 ? intersects[0].object : null;
-
-    this.meshes.forEach(mesh => {
-      if (mesh === hoveredMesh) {
-        // Hovered mesh → expand
-        gsap.to(mesh.material.uniforms.progress, {
-          value: 1,
-          ease: 'power2.inOut',
-        });
-      } else {
-        // Non-hovered meshes → shrink back
-        gsap.to(mesh.material.uniforms.progress, {
-          value: 0.1,
-          ease: 'power2.inOut',
-        });
-      }
+    gsap.to(target, {
+      progress: 1,
+      duration: 1.6,
+      ease: "power3.inOut",
+      onUpdate: () => {
+        this.introProgress = target.progress;
+      },
+      onComplete: () => {
+        this.introProgress = 1;
+        onComplete?.();
+      },
     });
-
   }
 
   setupResize() {
@@ -260,7 +246,7 @@ export default class InfiniteSlider {
       duration: 1.4,
       ease: "expo.in",
       onUpdate: () => {
-        this.updateMeshes(target.position, 4.5, target.spacing, 1);
+        this.updateMeshes(target.position, 5, target.spacing, 1);
       },
       onComplete: () => {
         // Small delay lets Next.js prepare the incoming page
@@ -313,7 +299,6 @@ export default class InfiniteSlider {
   
     // Remove event listeners
     window.removeEventListener('click', this._onClick);
-    window.removeEventListener('mousemove', this._onMouseMove);
   
     // Dispose geometries, materials, textures
     this.meshes.forEach(mesh => {

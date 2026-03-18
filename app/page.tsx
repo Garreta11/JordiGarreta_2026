@@ -116,7 +116,7 @@ export default function Home() {
 
     sketchRef.current = sketch;
 
-    const loops = 4.5;
+    const loops = 5;
     let lastScroll = 0;
     let smoothVelocity = 0;
 
@@ -136,14 +136,15 @@ export default function Home() {
       setCurrentPost(infinitePosts[Math.round(position)]);
 
       const mappedVelocity = mapValue(Math.abs(smoothVelocity), 0, 15, 0, 5);
+      const clampVelocity = Math.max(0, Math.min(mappedVelocity, 2));
 
       const minRadius = 1;
       const maxRadius = 1.5;
       const minSpacing = 0.5;
       const maxSpacing = 0.7;
       
-      const targetRadius = minRadius + mappedVelocity * (maxRadius - minRadius);
-      const targetSpacing = minSpacing + mappedVelocity * (maxSpacing - minSpacing);
+      const targetRadius = minRadius + clampVelocity * (maxRadius - minRadius);
+      const targetSpacing = minSpacing + clampVelocity * (maxSpacing - minSpacing);
       
       const lerpSpeed = 0.15;
       radiusRef.current += (targetRadius - radiusRef.current) * lerpSpeed;
@@ -162,6 +163,7 @@ export default function Home() {
       if (sketchRef.current) sketchRef.current.destroy();
       sketchRef.current = null;
     };
+    
   }, [infinitePosts]);
 
   /* ----------------------------------
@@ -175,15 +177,21 @@ export default function Home() {
       !projectRef.current ||
       !descriptionRef.current ||
       !currentPost ||
-      isLoading  // wait for loader to finish
+      isLoading
     ) return;
-
+  
     introPlayedRef.current = true;
-
+  
     gsap.set(containerEl, { y: "120vh", rotateX: -45, opacity: 0 });
     gsap.set([descriptionRef.current, projectRef.current], { opacity: 0, y: 30 });
-
+  
     homePageIntro(containerEl, projectRef.current, descriptionRef.current);
+  
+    // Trigger the flat → spiral intro once the container slides in
+    // Delay matches your homePageIntro slide-up duration
+    setTimeout(() => {
+      sketchRef.current?.introAnimation();
+    }, 800); // adjust to match your GSAP timeline delay
   }, [currentPost, isLoading]);
 
   /* ----------------------------------
