@@ -108,7 +108,7 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
     
           const title = document.createElement('div');
           title.className = styles.cellTitle;
-          title.textContent = `${lab.title} - ${lab.tech ?? ''}`;
+          title.textContent = `${lab.title}  [${lab.tech ?? ''}]`;
           cell.appendChild(title);
           row.appendChild(cell);
           rowImgs.push(cell);
