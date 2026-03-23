@@ -184,7 +184,7 @@ export default function Home() {
 
       sketchRef.current.updateMeshes(position, loops, spacingRef.current, hSpacingRef.current, radiusRef.current);
       sketchRef.current.getVelocity(smoothVelocity);
-      sketchRef.current.setDeform(smoothVelocity);
+      sketchRef.current.setDeform(Math.max(-1.5, Math.min(1.5, smoothVelocity)));
 
       rafRef.current = requestAnimationFrame(animate);
     };
