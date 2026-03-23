@@ -86,16 +86,36 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
             video.muted = true;
             video.loop = true;
             video.playsInline = true;
+            video.preload = 'metadata';
+
+            // Capture first frame as poster so there's no black flash
+            video.addEventListener('loadedmetadata', () => {
+              video.currentTime = 0.01;
+            }, { once: true });
+
+            video.addEventListener('seeked', () => {
+              const canvas = document.createElement('canvas');
+              canvas.width = video.videoWidth;
+              canvas.height = video.videoHeight;
+              canvas.getContext('2d')?.drawImage(video, 0, 0);
+              video.poster = canvas.toDataURL('image/jpeg', 0.85);
+            }, { once: true });
 
             if (isMobile) {
-              // On mobile: show controls and don't rely on hover
-              video.controls = true;
-              // Set muted to false by default on mobile if you want sound 
-              // (though most browsers require a click to play with sound)
-              video.muted = false;
+              cell.addEventListener('touchstart', () => {
+                // Pause all other videos
+                containerRef.current?.querySelectorAll('video').forEach((v) => {
+                  if (v !== video) v.pause();
+                });
+                video.play();
+              }, { passive: true });
             } else {
-              // On desktop: keep hover logic
-              cell.addEventListener('mouseenter', () => video.play());
+              cell.addEventListener('mouseenter', () => {
+                containerRef.current?.querySelectorAll('video').forEach((v) => {
+                  if (v !== video) v.pause();
+                });
+                video.play();
+              });
               cell.addEventListener('mouseleave', () => video.pause());
             }
 
@@ -232,14 +252,14 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
       // 1. Determine orientation-based sizing
       if (vh > vw) {
         // Vertical Screen (Mobile)
-        boxHeight = vh * 0.35; // Use 35% of height as base
-        boxWidth = boxHeight; // Portrait aspect ratio
-        gutter = vw * 0.05;
+        boxHeight = vh * 0.2; // Use 35% of height as base
+        boxWidth = boxHeight / 0.7; // Portrait aspect ratio
+        gutter = vw * 0.1;
       } else {
         // Horizontal Screen (Desktop)
         boxWidth = vw * 0.1; // Use 35% of width as base
         boxHeight = boxWidth * 0.7; // Landscape aspect ratio
-        gutter = vw * 0.05;
+        gutter = vw * 0.1;
       }
       horizSpacing = boxWidth + gutter;
       vertSpacing = boxHeight + gutter;
@@ -275,6 +295,7 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
 
     const dragger = Draggable.create(containerRef.current, {
       type: 'x,y',
+      trigger: containerRef.current.parentElement!,
       inertia: true,
       onDrag: updateCenterElem,
       onThrowUpdate: updateCenterElem,

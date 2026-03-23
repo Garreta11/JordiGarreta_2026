@@ -35,8 +35,8 @@ void main() {
     }
 
     // Scroll deformation: wave in Z and Y driven by velocity
-    pos.z += sin(position.y * 3.0) * uDeform * 0.05;
-    pos.y += sin(position.x * 3.0) * uDeform * 0.08;
+    pos.z += sin(position.y * 3.0 + 100.) * uDeform * 0.07;
+    pos.y += sin(position.x * 3.0) * uDeform * 0.04;
 
     vUvCorrected = uv + 0.5;
 

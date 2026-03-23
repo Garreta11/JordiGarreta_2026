@@ -12,11 +12,8 @@ export default defineType({
       hidden: true,
     }),
     defineField({
-      name: "video",
-      type: "file",
-      options: {
-        accept: "video/*",
-      },
+      name: "bgImage",
+      type: "image",
     }),
     defineField({
       name: "description",

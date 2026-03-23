@@ -2,6 +2,7 @@
 
 import styles from "./page.module.scss";
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import Header from "@/components/Header/Header";
 import { postQueries } from "@/lib/queries/post.queries";
 import { descriptionQueries } from "@/lib/queries/description.queries";
 import { client } from "@/sanity/lib/client";
@@ -285,6 +286,7 @@ export default function Home() {
   ---------------------------------- */
   return (
     <div className={styles.page}>
+      <Header />
       <Loader isLoading={isLoading} />
 
       <div style={{ height: `${posts.length * 100}vh` }} />

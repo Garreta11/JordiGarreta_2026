@@ -117,12 +117,16 @@ const Navigation = () => {
         })}
       </nav>
       <div className={styles.navigation__contact}>
-        <a href={`tel:${about?.phone}`} className={styles.page__content__contact__item}>
+        <a href={`tel:${about?.phone}`} className={styles.navigation__contact__item}>
           {about?.phone}
         </a>
-        <a href={`mailto:${about?.email}`} className={styles.page__content__contact__item}>
+        <a href={`mailto:${about?.email}`} className={styles.navigation__contact__item}>
           {about?.email}
         </a>
+         {/* ── COPYRIGHT ── */}
+        <div className={`${styles.navigation__contact__item} ${styles.navigation__contact__item__copyright}`} data-anim="about-el">
+          <p>© 2026 Jordi Garreta. All rights reserved.</p>
+        </div>
 
       </div>
     </div>

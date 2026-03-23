@@ -38,7 +38,7 @@ function getStatusLine(hour: number, code: number, temp: number, isWeekend: bool
     ? (isHot && isClear ? "Probably at the beach" : isRain ? "Visiting a museum maybe" : "Exploring the city")
     : (isHot && isClear ? "Might be at the beach" : isRain ? "Deep in code" : "Probably coding");
   if (hour >= 13 && hour < 15) return isWeekend
-    ? (isNice ? "Long lunch outside" : "Having lunch")
+    ? (isNice ? "Probably lunch with family" : "Having lunch")
     : "Having lunch";
   if (hour >= 15 && hour < 17) return isWeekend
     ? (isSnow ? "I might be skiing" : isHot && isClear ? "Siesta or the beach" : isRain ? "Watching a film" : "Wandering around")
@@ -47,7 +47,7 @@ function getStatusLine(hour: number, code: number, temp: number, isWeekend: bool
     ? (isNice ? "Golden hour walk on the beach" : isRain ? "Coffee somewhere" : "Out for a walk")
     : (isHot && isClear ? "Maybe a walk along the beach" : isRain ? "Reading or coding" : "Evening walk maybe");
   if (hour >= 19 && hour < 21) return isWeekend
-    ? (isNice ? "Aperitivo with friends" : "Probably having a beer")
+    ? (isNice ? "Watching FC Barcelona" : "Probably having a beer")
     : "Probably having a beer";
   if (hour >= 21 && hour < 23) return "Out for dinner";
   return "Wrapping up the day";
@@ -65,12 +65,12 @@ export default function Header() {
     const tick = () => {
       const now = new Date();
       setTime(
-        now.toLocaleTimeString("en-GB", {
+        now.toLocaleTimeString("en-US", {
           timeZone: "Europe/Madrid",
-          hour: "2-digit",
+          hour: "numeric",
           minute: "2-digit",
-          second: "2-digit",
-        })
+          hour12: true,
+        }).toLowerCase()
       );
       setHour(parseInt(now.toLocaleString("en-GB", { timeZone: "Europe/Madrid", hour: "numeric", hour12: false })));
       const weekday = now.toLocaleDateString("en-GB", { timeZone: "Europe/Madrid", weekday: "short" });

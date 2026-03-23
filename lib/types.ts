@@ -49,4 +49,5 @@ export interface About {
   phone: string;
   video: SanityFileSource;
   clients: string[];
+  bgImage: SanityImageSource;
 }

@@ -24,7 +24,7 @@
 
   &__role {
     color: var(--background);
-    opacity: 1;
+    opacity: 0.45;
   }
 
   &__location {
@@ -47,6 +47,5 @@
   &__status {
     color: var(--background);
     opacity: 0.45;
-    font-style: italic;
   }
 }

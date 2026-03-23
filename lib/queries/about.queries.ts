@@ -14,7 +14,8 @@ export const aboutQueries = {
       },
       email,
       phone,
-      video
+      video,
+      bgImage
     }
   `,
 };
