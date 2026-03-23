@@ -48,4 +48,5 @@ export interface About {
   email: string;
   phone: string;
   video: SanityFileSource;
+  clients: string[];
 }

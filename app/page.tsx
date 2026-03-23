@@ -32,7 +32,8 @@ export default function Home() {
   
   const radiusRef = useRef(3);
   const positionRef = useRef(0);
-  const spacingRef = useRef(0.5);
+  const spacingRef = useRef(0.8);
+  const hSpacingRef = useRef(1.0);
 
   const bgRef1 = useRef<HTMLDivElement>(null);
   const bgRef2 = useRef<HTMLDivElement>(null);
@@ -162,20 +163,27 @@ export default function Home() {
       const mappedVelocity = mapValue(Math.abs(smoothVelocity), 0, 15, 0, 5);
       const clampVelocity = Math.max(0, Math.min(mappedVelocity, 2));
 
-      const minRadius = 1;
-      const maxRadius = 1.5;
-      const minSpacing = 0.5;
-      const maxSpacing = 0.7;
+      const minRadius = 2;
+      const maxRadius = 2.5;
       
+      const minSpacing = 0.8;
+      const maxSpacing = 0.8;
+
+      const minHSpacing = 1.2;
+      const maxHSpacing = 1.5;
+
       const targetRadius = minRadius + clampVelocity * (maxRadius - minRadius);
       const targetSpacing = minSpacing + clampVelocity * (maxSpacing - minSpacing);
-      
+      const targetHSpacing = minHSpacing + clampVelocity * (maxHSpacing - minHSpacing);
+
       const lerpSpeed = 0.15;
       radiusRef.current += (targetRadius - radiusRef.current) * lerpSpeed;
       spacingRef.current += (targetSpacing - spacingRef.current) * lerpSpeed;
+      hSpacingRef.current += (targetHSpacing - hSpacingRef.current) * lerpSpeed;
 
-      sketchRef.current.updateMeshes(position, loops, spacingRef.current, radiusRef.current);
+      sketchRef.current.updateMeshes(position, loops, spacingRef.current, hSpacingRef.current, radiusRef.current);
       sketchRef.current.getVelocity(smoothVelocity);
+      sketchRef.current.setDeform(smoothVelocity);
 
       rafRef.current = requestAnimationFrame(animate);
     };
@@ -312,17 +320,27 @@ export default function Home() {
           <div className={styles.page__overlay} />
 
           <div ref={descriptionRef} className={styles.page__description} data-anim="description">
-            <PortableText value={description} />
+            {/* <PortableText value={description} /> */}
           </div>
 
-          <div ref={projectRef} className={styles.page__project} data-anim="project">
+          <div
+            ref={projectRef}
+            className={styles.page__project}
+            data-anim="project"
+            onMouseEnter={() => handlePreload(urlFor(currentPost.mainImage).url())}
+            onClick={() => handleViewMore(currentPost.slug, urlFor(currentPost.mainImage).url())}
+          >
             <p className={`${styles.page__project__item} ${styles.page__project__title}`}>
               {currentPost.title}
             </p>
+            <p className={`${styles.page__project__item} ${styles.page__project__category}`}>
+              {currentPost.basicInfo.category}
+            </p>
+            <p className={`${styles.page__project__item} ${styles.page__project__year}`}>
+              {currentPost.basicInfo.year}
+            </p>
             <div className={`${styles.page__project__item} ${styles.page__project__link}`}>
               <button
-                onClick={() => handleViewMore(currentPost.slug, urlFor(currentPost.mainImage).url())}
-                onMouseEnter={() => handlePreload(urlFor(currentPost.mainImage).url())}
                 className={`${styles.page__project__link__button} underline`}
               >
                 VIEW MORE
@@ -340,12 +358,6 @@ export default function Home() {
                 </svg>
               </button>
             </div>
-            <p className={`${styles.page__project__item} ${styles.page__project__category}`}>
-              {currentPost.basicInfo.category}
-            </p>
-            <p className={`${styles.page__project__item} ${styles.page__project__year}`}>
-              {currentPost.basicInfo.year}
-            </p>
           </div>
         </>
       )}

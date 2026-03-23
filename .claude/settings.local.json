@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la /c/Users/jordi/Documents/04_JordiGarreta/2026/portfolio/*.*)",
+      "Bash(grep -E \"\\\\.\\(json|js|ts|config|mjs\\)$\")",
+      "Bash(grep -r \"useState\\\\|useContext\\\\|useReducer\" /c/Users/jordi/Documents/04_JordiGarreta/2026/portfolio/app --include=*.tsx --include=*.ts)"
+    ]
+  }
+}

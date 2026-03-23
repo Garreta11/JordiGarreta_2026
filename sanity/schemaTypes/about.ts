@@ -32,6 +32,11 @@ export default defineType({
       type: "string",
     }),
     defineField({
+      name: "clients",
+      type: "array",
+      of: [{ type: "string" }]
+    }),
+    defineField({
       name: "stack",
       type: "array",
       of: [{ type: "string" }],

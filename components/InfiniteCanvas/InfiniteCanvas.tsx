@@ -55,7 +55,7 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
 
     function onMediaLoaded() {
       // Simple counter logic remains same
-      setIsLoading(false); 
+      setIsLoading(false);
     }
 
     function createImageGrid() {
@@ -63,49 +63,49 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
       container.innerHTML = '';
       rowArray = [];
       imgRep = [];
-    
+
       // Check for touch/mobile device
       const isMobile = window.matchMedia('(max-width: 768px)').matches;
-    
+
       for (let y = 0; y < rowNum; y++) {
         const row = document.createElement('div');
         row.className = styles.row;
         row.dataset.offset = y % 2 === 0 ? 'false' : 'true';
         const rowImgs: HTMLDivElement[] = [];
-    
+
         for (let x = 0; x < imgNum; x++) {
           const media = cellMedia[y * imgNum + x];
           const lab = labs[(y * imgNum + x) % labs.length];
           const cell = document.createElement('div');
           cell.className = styles.sliderImage;
           cell.dataset.anim = 'lab-el';
-    
+
           if (media.type === 'video') {
             const video = document.createElement('video');
             video.src = media.url;
             video.muted = true;
             video.loop = true;
             video.playsInline = true;
-    
+
             if (isMobile) {
               // On mobile: show controls and don't rely on hover
               video.controls = true;
               // Set muted to false by default on mobile if you want sound 
               // (though most browsers require a click to play with sound)
-              video.muted = false; 
+              video.muted = false;
             } else {
               // On desktop: keep hover logic
               cell.addEventListener('mouseenter', () => video.play());
               cell.addEventListener('mouseleave', () => video.pause());
             }
-    
+
             video.addEventListener('canplay', onMediaLoaded, { once: true });
             cell.appendChild(video);
           } else {
             cell.style.backgroundImage = `url(${media.url})`;
             onMediaLoaded();
           }
-    
+
           const title = document.createElement('div');
           title.className = styles.cellTitle;
           title.textContent = `${lab.title}  [${lab.tech ?? ''}]`;
@@ -130,15 +130,15 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
         const firstRowY = gsap.getProperty(rowArray[0], "y") as number;
         const last = rowArray[rowArray.length - 1];
         const isOffset = last.dataset.offset === "true";
-        
+
         // Calculate new X based on offset logic to prevent "drift"
         const newY = firstRowY - vertSpacing;
         const currentX = gsap.getProperty(last, "x") as number;
         const newX = isOffset ? currentX + (boxWidth / 2) : currentX - (boxWidth / 2);
-        
+
         gsap.set(last, { y: newY, x: newX });
         last.dataset.offset = isOffset ? "false" : "true";
-        
+
         moveArrayIndex(rowArray, rowArray.length - 1, 0);
         moveArrayIndex(imgRep, imgRep.length - 1, 0);
       }
@@ -149,14 +149,14 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
         const lastRowY = gsap.getProperty(rowArray[rowArray.length - 1], "y") as number;
         const first = rowArray[0];
         const isOffset = first.dataset.offset === "true";
-        
+
         const newY = lastRowY + vertSpacing;
         const currentX = gsap.getProperty(first, "x") as number;
         const newX = isOffset ? currentX - (boxWidth / 2) : currentX + (boxWidth / 2);
-        
+
         gsap.set(first, { y: newY, x: newX });
         first.dataset.offset = isOffset ? "false" : "true";
-        
+
         moveArrayIndex(rowArray, 0, rowArray.length - 1);
         moveArrayIndex(imgRep, 0, imgRep.length - 1);
       }
@@ -187,12 +187,12 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
     function updateCenterElem() {
       const cx = window.innerWidth / 2;
       const cy = window.innerHeight / 2;
-      
+
       // Increased scan area to ensure we never miss a cell during fast movement
       const samples = [
         [cx, cy], [cx - 20, cy], [cx + 20, cy], [cx, cy - 20], [cx, cy + 20]
       ];
-      
+
       let cell: HTMLElement | null = null;
       for (const [sx, sy] of samples) {
         const found = document.elementFromPoint(sx, sy);
@@ -204,7 +204,7 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
 
       if (cell && cell !== lastCenteredElem) {
         lastCenteredElem = cell;
-        
+
         // Find indices in current grid state
         let rIdx = -1, cIdx = -1;
         imgRep.forEach((row, r) => {
@@ -228,7 +228,7 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
     function resize() {
       const vh = window.innerHeight;
       const vw = window.innerWidth;
-    
+
       // 1. Determine orientation-based sizing
       if (vh > vw) {
         // Vertical Screen (Mobile)
@@ -237,21 +237,21 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
         gutter = vw * 0.05;
       } else {
         // Horizontal Screen (Desktop)
-        boxWidth = vw * 0.35; // Use 35% of width as base
+        boxWidth = vw * 0.1; // Use 35% of width as base
         boxHeight = boxWidth * 0.7; // Landscape aspect ratio
-        gutter = vw * 0.01;
+        gutter = vw * 0.05;
       }
       horizSpacing = boxWidth + gutter;
       vertSpacing = boxHeight + gutter;
-    
+
       // 3. Calculate the center offset
       // We want the middle cell (rowMidIndex, imgMidIndex) to be at (vw/2, vh/2)
       const startX = (vw / 2) - (imgMidIndex * horizSpacing) - (boxWidth / 2);
       const startY = (vh / 2) - (rowMidIndex * vertSpacing) - (boxHeight / 2);
-    
+
       // 4. Reset the container and apply new positions to rows and cells
       gsap.set(containerRef.current, { x: 0, y: 0 });
-    
+
       rowArray.forEach((row, i) => {
         const isOdd = i % 2 !== 0;
         gsap.set(row, {
@@ -259,7 +259,7 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
           x: isOdd ? startX - (boxWidth / 2) : startX,
           y: startY + (i * vertSpacing)
         });
-        
+
         const cells = row.querySelectorAll(imageSelector);
         gsap.set(cells, {
           width: boxWidth,

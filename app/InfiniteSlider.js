@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import fragment from './shaders/fragment.glsl';
 import vertex from './shaders/vertex.glsl';
-import { urlFor } from "@/lib/sanity.image";
+import { urlFor } from '@/lib/sanity.image';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
@@ -19,17 +19,27 @@ export default class InfiniteSlider {
     this.width = this.container.offsetWidth;
     this.height = this.container.offsetHeight;
 
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1 });
+    this.renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: true,
+      toneMapping: THREE.ACESFilmicToneMapping,
+      toneMappingExposure: 1,
+    });
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(this.width, this.height);
     this.renderer.setClearColor(0x181818, 0);
     this.container.appendChild(this.renderer.domElement);
 
-    this.camera = new THREE.PerspectiveCamera(70, this.width / this.height, 0.1, 1000);
+    this.camera = new THREE.PerspectiveCamera(
+      70,
+      this.width / this.height,
+      0.1,
+      1000,
+    );
     this.camera.position.set(0, 0, 5);
 
     const ambient = new THREE.AmbientLight(0xffffff, 1);
-    this.scene.add(ambient);    
+    this.scene.add(ambient);
 
     this.loader = new THREE.TextureLoader();
     this.gltfLoader = new GLTFLoader();
@@ -46,7 +56,7 @@ export default class InfiniteSlider {
     this.groups = [];
 
     this.addObjects();
-    this.handleImages();    
+    this.handleImages();
     // this.setModel()
 
     // this.setupPostProcessing();
@@ -72,8 +82,9 @@ export default class InfiniteSlider {
         spiralHeight: { value: 0 },
         texture1: { value: null },
         uRadius: { value: 1 },
-        uPlaneAspect: { value: 1.5 },
+        uPlaneAspect: { value: 1.0 },
         uTextureAspect: { value: 1.0 },
+        uDeform: { value: 0.0 },
         opacity: { value: 1.0 },
       },
       vertexShader: vertex,
@@ -95,7 +106,8 @@ export default class InfiniteSlider {
         mat.uniforms.uTextureAspect.value = imgW / imgH;
       });
 
-      const geo = new THREE.PlaneGeometry(1.5, 1, 20, 20);
+      // const geo = new THREE.PlaneGeometry(0.77, 1.5, 20, 20);
+      const geo = new THREE.PlaneGeometry(1.0, 1.95, 20, 20);
       const mesh = new THREE.Mesh(geo, mat);
       mesh.userData.slug = im.slug;
 
@@ -135,34 +147,43 @@ export default class InfiniteSlider {
         });
         this.cubeCamera = new THREE.CubeCamera(0.1, 1000, cubeRenderTarget);
         this.cubeCamera.position.copy(this.model.position);
-      }
+      },
     );
   }
 
-  updateMeshes(position = 0, loops = 2, verticalSpacing = 0.5, radius = 1) {
+  updateMeshes(
+    position = 0,
+    loops = 2,
+    verticalSpacing = 0.8,
+    horizontalSpacing = 1.0,
+    radius = 1,
+  ) {
     const count = this.meshes.length;
     const t = this.introProgress;
     this.currentPosition = position;
-  
+    this.currentSpacing = verticalSpacing;
+    this.currentHSpacing = horizontalSpacing;
+    this.currentRadius = radius;
+
     // Auto-fit the flat row to the camera's visible width at z=0
     const fovRad = (70 * Math.PI) / 180;
     const visibleWidth = 2 * Math.tan(fovRad / 2) * this.camera.position.z;
-    const gap = (visibleWidth * 0.85) / (count - 1); // 85% of screen width
-  
+    const gap = (visibleWidth * 1) / (count - 1); // 85% of screen width
+
     const totalWidth = (count - 1) * gap;
-  
+
     this.meshes.forEach((mesh, i) => {
       const delta = i - position;
-      const angle = (delta / count) * Math.PI * 2 * loops;
+      const angle = (delta / count) * Math.PI * 2 * loops * horizontalSpacing;
       const spiralY = -delta * verticalSpacing;
       const flatX = i * gap - totalWidth / 2;
-  
+
       mesh.position.x = flatX * (1 - t);
-      mesh.position.y = (flatX * 0 + (spiralY - 0) * t); // flatY = 0
+      mesh.position.y = flatX * 0 + (spiralY - 0) * t; // flatY = 0
       mesh.position.z = 0;
-  
+
       mesh.material.uniforms.spiralAngle.value = angle * t;
-      mesh.material.uniforms.uRadius.value     = radius * t;
+      mesh.material.uniforms.uRadius.value = radius * t;
       mesh.material.uniforms.distanceFromCenter.value =
         t * (1 - Math.min(Math.abs(delta), 1) ** 2);
       mesh.material.uniforms.spiralHeight.value = spiralY * t;
@@ -171,11 +192,11 @@ export default class InfiniteSlider {
 
   introAnimation(onComplete) {
     const target = { progress: 0 };
-  
+
     gsap.to(target, {
       progress: 1,
       duration: 1.6,
-      ease: "power3.inOut",
+      ease: 'power3.inOut',
       onUpdate: () => {
         this.introProgress = target.progress;
       },
@@ -200,36 +221,68 @@ export default class InfiniteSlider {
     });
   }
 
-  setupClick() {
-    if (this.meshes) {
-      this.raycaster.setFromCamera(this.mouse, this.camera);
-      var intersects = this.raycaster.intersectObjects(this.meshes);
-      if (intersects.length > 0) {
-        const slug = intersects[0].object.userData.slug;
-        if (slug) {
-          console.log(slug);
-        }
+  setupClick(event) {
+    if (!this.meshes.length) return;
+
+    const rect = this.container.getBoundingClientRect();
+    const mouseNDC = new THREE.Vector2(
+      ((event.clientX - rect.left) / this.width) * 2 - 1,
+      -((event.clientY - rect.top) / this.height) * 2 + 1,
+    );
+
+    // The vertex shader displaces each mesh center to:
+    //   x = radius * sin(spiralAngle)   (localBend=0 at center)
+    //   y = mesh.position.y
+    //   z = radius * cos(spiralAngle)
+    // Raycasting against the flat geometry would miss these positions,
+    // so we project each actual center to NDC and find the nearest one.
+    const candidates = [];
+
+    this.meshes.forEach((mesh) => {
+      const angle = mesh.material.uniforms.spiralAngle.value;
+      const radius = mesh.material.uniforms.uRadius.value;
+
+      const worldPos = new THREE.Vector3(
+        radius * Math.sin(angle),
+        mesh.position.y,
+        radius * Math.cos(angle),
+      );
+      worldPos.project(this.camera);
+
+      const dist = Math.hypot(worldPos.x - mouseNDC.x, worldPos.y - mouseNDC.y);
+      if (dist < 0.2) {
+        candidates.push({ mesh, dist, ndcZ: worldPos.z });
+      }
+    });
+
+    // Among hits, prefer the one closest to the camera (smallest NDC z)
+    candidates.sort((a, b) => a.ndcZ - b.ndcZ);
+    const closestMesh = candidates[0]?.mesh ?? null;
+
+    if (closestMesh) {
+      const slug = closestMesh.userData.slug;
+      if (slug) {
+        console.log(slug);
       }
     }
   }
 
   setupPostProcessing() {
-
     this.composer = new EffectComposer(this.renderer);
-  
+
     // Base render pass
     this.renderPass = new RenderPass(this.scene, this.camera);
     this.composer.addPass(this.renderPass);
 
     this.afterimagePass = new AfterimagePass();
-    this.afterimagePass.uniforms['damp'].value = 1.;
+    this.afterimagePass.uniforms['damp'].value = 1;
 
     this.composer.addPass(this.afterimagePass);
   }
 
   getVelocity(velocity) {
     if (this.composer) {
-      const damp = Math.min(Math.max(Math.abs(velocity), 0), 0.9); 
+      const damp = Math.min(Math.max(Math.abs(velocity), 0), 0.9);
       gsap.to(this.afterimagePass.uniforms['damp'], {
         duration: 0.5,
         value: damp,
@@ -237,28 +290,47 @@ export default class InfiniteSlider {
     }
   }
 
+  setDeform(velocity) {
+    this.materials.forEach((mat) => {
+      mat.uniforms.uDeform.value = velocity;
+    });
+  }
+
   exitAnimation(currentPosition, onComplete) {
-    const target = { position: currentPosition, spacing: 0.5 };
-  
+    const target = {
+      position: currentPosition,
+      spacing: this.currentSpacing ?? 0.8,
+      hSpacing: this.currentHSpacing ?? 1.0,
+      radius: this.currentRadius ?? 1,
+    };
+
     gsap.to(target, {
       position: currentPosition + 30,
       spacing: 10,
+      hSpacing: 3.0,
+      radius: 1,
       duration: 1.4,
-      ease: "expo.in",
+      ease: 'expo.in',
       onUpdate: () => {
-        this.updateMeshes(target.position, 5, target.spacing, 1);
+        this.updateMeshes(
+          target.position,
+          5,
+          target.spacing,
+          target.hSpacing,
+          target.radius,
+        );
       },
       onComplete: () => {
         // Small delay lets Next.js prepare the incoming page
         setTimeout(onComplete, 50);
       },
     });
-  
+
     this.meshes.forEach((mesh, i) => {
       gsap.to(mesh.material.uniforms.opacity, {
         value: 0,
         duration: 1,
-        ease: "power2.in",
+        ease: 'power2.in',
         delay: i * 0.03,
       });
     });
@@ -266,9 +338,9 @@ export default class InfiniteSlider {
 
   render() {
     if (!this.isPlaying) return;
-  
+
     this.time += 0.05;
-    this.materials.forEach(m => m.uniforms.time.value = this.time);
+    this.materials.forEach((m) => (m.uniforms.time.value = this.time));
 
     if (this.model) {
       // Update model environment
@@ -278,7 +350,6 @@ export default class InfiniteSlider {
       this.model.material.envMap = this.cubeCamera.renderTarget.texture;
     }
 
-  
     // Render the scene
     if (this.composer) {
       this.composer.render();
@@ -290,37 +361,37 @@ export default class InfiniteSlider {
     if (this.controls) {
       this.controls.update();
     }
-  
+
     requestAnimationFrame(this.render.bind(this));
   }
 
   destroy() {
     this.isPlaying = false;
-  
+
     // Remove event listeners
     window.removeEventListener('click', this._onClick);
-  
+
     // Dispose geometries, materials, textures
-    this.meshes.forEach(mesh => {
+    this.meshes.forEach((mesh) => {
       mesh.geometry.dispose();
       if (mesh.material.uniforms.texture1.value) {
         mesh.material.uniforms.texture1.value.dispose();
       }
     });
-    this.materials.forEach(mat => mat.dispose());
-  
+    this.materials.forEach((mat) => mat.dispose());
+
     // Dispose composer if used
     if (this.composer) {
       this.composer.dispose();
     }
-  
+
     // Destroy renderer and remove canvas
     this.renderer.dispose();
     this.renderer.forceContextLoss();
     if (this.renderer.domElement.parentNode) {
       this.renderer.domElement.parentNode.removeChild(this.renderer.domElement);
     }
-  
+
     this.scene.clear();
   }
 }

@@ -3,6 +3,7 @@ export const aboutQueries = {
     *[_type == "about"][0] {
       description,
       stack,
+      clients,
       social[]{
         name,
         url
