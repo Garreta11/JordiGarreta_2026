@@ -12,9 +12,10 @@ import gsap from 'gsap';
 export default class InfiniteSlider {
   constructor(options) {
     this.scene = new THREE.Scene();
-    /* this.scene.background = new THREE.Color(0x181818); */
+
     this.container = options.dom;
     this.images = options.images;
+
     this.width = this.container.offsetWidth;
     this.height = this.container.offsetHeight;
 
@@ -38,6 +39,7 @@ export default class InfiniteSlider {
     this.isPlaying = true;
 
     this.introProgress = 0; // 0 = flat, 1 = spiral
+    this.currentPosition = 0;
 
     this.meshes = [];
     this.materials = [];
@@ -140,6 +142,7 @@ export default class InfiniteSlider {
   updateMeshes(position = 0, loops = 2, verticalSpacing = 0.5, radius = 1) {
     const count = this.meshes.length;
     const t = this.introProgress;
+    this.currentPosition = position;
   
     // Auto-fit the flat row to the camera's visible width at z=0
     const fovRad = (70 * Math.PI) / 180;
@@ -201,13 +204,10 @@ export default class InfiniteSlider {
     if (this.meshes) {
       this.raycaster.setFromCamera(this.mouse, this.camera);
       var intersects = this.raycaster.intersectObjects(this.meshes);
-      // console.log(this.scene.children);
       if (intersects.length > 0) {
-        // console.log(intersects[0].object);
         const slug = intersects[0].object.userData.slug;
         if (slug) {
-          // console.log(slug);
-          // this.router.push(url, { scroll: false });
+          console.log(slug);
         }
       }
     }

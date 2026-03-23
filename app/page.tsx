@@ -58,6 +58,30 @@ export default function Home() {
   }
 
   /* ----------------------------------
+     Exit transition
+  ---------------------------------- */
+  const handleViewMore = useCallback(
+    (slug: string, imageUrl: string) => {
+      if (!projectRef.current || !descriptionRef.current || !sketchRef.current) return;
+
+      isExitingRef.current = true;
+
+      const img = new window.Image();
+      img.onload = () => {
+        const bgElements = [bgRef1.current, bgRef2.current].filter(Boolean) as HTMLElement[];
+        const tl = fadeOutHomeText(projectRef.current!, descriptionRef.current!, bgElements);
+        tl.call(() => {
+          sketchRef.current!.exitAnimation(positionRef.current, () => {
+            router.push(`/p/${slug}`);
+          });
+        }, [], 0.1);
+      };
+      img.src = imageUrl;
+    },
+    [router]
+  );
+
+  /* ----------------------------------
      Fetch Posts
   ---------------------------------- */
   useEffect(() => {
@@ -242,30 +266,7 @@ export default function Home() {
     };
   }, []);
 
-  /* ----------------------------------
-     Exit transition
-  ---------------------------------- */
-  const handleViewMore = useCallback(
-    (slug: string, imageUrl: string) => {
-      if (!projectRef.current || !descriptionRef.current || !sketchRef.current) return;
-
-      isExitingRef.current = true;
-
-      const img = new window.Image();
-      img.onload = () => {
-        const bgElements = [bgRef1.current, bgRef2.current].filter(Boolean) as HTMLElement[];
-        const tl = fadeOutHomeText(projectRef.current!, descriptionRef.current!, bgElements);
-        tl.call(() => {
-          sketchRef.current!.exitAnimation(positionRef.current, () => {
-            router.push(`/p/${slug}`);
-          });
-        }, [], 0.1);
-      };
-      img.src = imageUrl;
-    },
-    [router]
-  );
-
+  
   const handlePreload = useCallback((imageUrl: string) => {
     const img = new window.Image();
     img.src = imageUrl;
@@ -348,6 +349,7 @@ export default function Home() {
           </div>
         </>
       )}
+
 
       <div id="container" className={styles.page__container} />
     </div>
