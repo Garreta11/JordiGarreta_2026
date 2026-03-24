@@ -88,18 +88,6 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
             video.playsInline = true;
             video.preload = 'metadata';
 
-            // Capture first frame as poster so there's no black flash
-            video.addEventListener('loadedmetadata', () => {
-              video.currentTime = 0.01;
-            }, { once: true });
-
-            video.addEventListener('seeked', () => {
-              const canvas = document.createElement('canvas');
-              canvas.width = video.videoWidth;
-              canvas.height = video.videoHeight;
-              canvas.getContext('2d')?.drawImage(video, 0, 0);
-              video.poster = canvas.toDataURL('image/jpeg', 0.85);
-            }, { once: true });
 
             if (isMobile) {
               cell.addEventListener('touchstart', () => {
@@ -125,6 +113,10 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
             cell.style.backgroundImage = `url(${media.url})`;
             onMediaLoaded();
           }
+
+          // Deterministic random offsets — stored normalised [-1, 1] and scaled in resize()
+          cell.dataset.offsetX = String((Math.random() - 0.5) * 2);
+          cell.dataset.offsetY = String((Math.random() - 0.5) * 2);
 
           const title = document.createElement('div');
           title.className = styles.cellTitle;
@@ -252,9 +244,9 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
       // 1. Determine orientation-based sizing
       if (vh > vw) {
         // Vertical Screen (Mobile)
-        boxHeight = vh * 0.2; // Use 35% of height as base
+        boxHeight = vh * 0.1; // Use 35% of height as base
         boxWidth = boxHeight / 0.7; // Portrait aspect ratio
-        gutter = vw * 0.1;
+        gutter = vw * 0.2;
       } else {
         // Horizontal Screen (Desktop)
         boxWidth = vw * 0.1; // Use 35% of width as base
@@ -280,12 +272,20 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
           y: startY + (i * vertSpacing)
         });
 
-        const cells = row.querySelectorAll(imageSelector);
-        gsap.set(cells, {
-          width: boxWidth,
-          height: boxHeight,
-          x: (idx) => idx * horizSpacing,
-          y: 0
+        const cells = row.querySelectorAll<HTMLElement>(imageSelector);
+        cells.forEach((cell, idx) => {
+          const ox = parseFloat(cell.dataset.offsetX ?? '0');
+          const oy = parseFloat(cell.dataset.offsetY ?? '0');
+          gsap.set(cell, {
+            width: boxWidth,
+            height: boxHeight,
+            x: idx * horizSpacing,
+            y: 0,
+          });
+          // CSS left/top are independent from GSAP's transform x/y,
+          // so recycling logic stays unaffected
+          cell.style.left = `${ox * boxWidth * 0.2}px`;
+          cell.style.top  = `${oy * boxHeight * 0.3}px`;
         });
       });
     }

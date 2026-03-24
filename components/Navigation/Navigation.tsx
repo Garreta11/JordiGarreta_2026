@@ -12,8 +12,8 @@ import { fadeOutHomeText, aboutPageExit, slideOutPostContent, labExit } from "@/
 
 const links = [
   { label: "Work", href: "/" },
-  { label: "LAB", href: "/lab" },
   { label: "About", href: "/about" },
+  { label: "LAB", href: "/lab" },
 ];
 
 const Navigation = () => {
