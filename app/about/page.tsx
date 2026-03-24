@@ -42,8 +42,8 @@ export default function AboutPage() {
 
       {bgUrl && (
         <div className={styles.page__bg}>
-          <AboutBg ref={bgCanvasRef} src={bgUrl} />
           <div className={styles.page__bg__overlay} />
+          <AboutBg ref={bgCanvasRef} src={bgUrl} />
         </div>
       )}
 
