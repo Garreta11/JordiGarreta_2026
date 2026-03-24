@@ -15,6 +15,32 @@
   }
 }
 
+.wrapper {
+  padding: 0.5rem;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  &__item {
+    width: calc(100% / 3);
+
+    &:nth-child(2) {
+      display: flex;
+      justify-content: center;
+    }
+  }
+
+  &__text {
+    color: var(--background);
+    line-height: 1;
+
+    &_right {
+      text-align: right;
+    }
+  }
+}
+
 .bracket {
   display: inline-flex;
   align-items: center;

@@ -48,6 +48,7 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
     let rowArray: HTMLDivElement[] = [];
     let imgRep: HTMLDivElement[][] = [];
     let boxWidth: number, boxHeight: number, gutter: number, horizSpacing: number, vertSpacing: number;
+    let startX: number, startY: number;
     let lastCenteredElem: HTMLElement | null = null;
 
     const imgMidIndex = Math.floor(imgNum / 2);
@@ -141,16 +142,14 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
       for (let i = 0; i < steps; i++) {
         const firstRowY = gsap.getProperty(rowArray[0], "y") as number;
         const last = rowArray[rowArray.length - 1];
-        const isOffset = last.dataset.offset === "true";
-
-        // Calculate new X based on offset logic to prevent "drift"
-        const newY = firstRowY - vertSpacing;
-        const currentX = gsap.getProperty(last, "x") as number;
-        const newX = isOffset ? currentX + (boxWidth / 2) : currentX - (boxWidth / 2);
-
-        gsap.set(last, { y: newY, x: newX });
-        last.dataset.offset = isOffset ? "false" : "true";
-
+        // New row goes above the current first row — its offset alternates from the first row's
+        const firstIsOffset = rowArray[0].dataset.offset === "true";
+        const newIsOffset = !firstIsOffset;
+        gsap.set(last, {
+          y: firstRowY - vertSpacing,
+          x: newIsOffset ? startX - boxWidth / 2 : startX,
+        });
+        last.dataset.offset = String(newIsOffset);
         moveArrayIndex(rowArray, rowArray.length - 1, 0);
         moveArrayIndex(imgRep, imgRep.length - 1, 0);
       }
@@ -160,15 +159,14 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
       for (let i = 0; i < steps; i++) {
         const lastRowY = gsap.getProperty(rowArray[rowArray.length - 1], "y") as number;
         const first = rowArray[0];
-        const isOffset = first.dataset.offset === "true";
-
-        const newY = lastRowY + vertSpacing;
-        const currentX = gsap.getProperty(first, "x") as number;
-        const newX = isOffset ? currentX - (boxWidth / 2) : currentX + (boxWidth / 2);
-
-        gsap.set(first, { y: newY, x: newX });
-        first.dataset.offset = isOffset ? "false" : "true";
-
+        // New row goes below the current last row — its offset alternates from the last row's
+        const lastIsOffset = rowArray[rowArray.length - 1].dataset.offset === "true";
+        const newIsOffset = !lastIsOffset;
+        gsap.set(first, {
+          y: lastRowY + vertSpacing,
+          x: newIsOffset ? startX - boxWidth / 2 : startX,
+        });
+        first.dataset.offset = String(newIsOffset);
         moveArrayIndex(rowArray, 0, rowArray.length - 1);
         moveArrayIndex(imgRep, 0, imgRep.length - 1);
       }
@@ -200,40 +198,44 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
       const cx = window.innerWidth / 2;
       const cy = window.innerHeight / 2;
 
-      // Increased scan area to ensure we never miss a cell during fast movement
-      const samples = [
-        [cx, cy], [cx - 20, cy], [cx + 20, cy], [cx, cy - 20], [cx, cy + 20]
-      ];
+      const containerX = gsap.getProperty(containerRef.current, "x") as number;
+      const containerY = gsap.getProperty(containerRef.current, "y") as number;
 
-      let cell: HTMLElement | null = null;
-      for (const [sx, sy] of samples) {
-        const found = document.elementFromPoint(sx, sy);
-        if (found?.closest(imageSelector)) {
-          cell = found.closest(imageSelector) as HTMLElement;
-          break;
-        }
-      }
+      // Find the cell whose center is closest to the viewport center using
+      // transform math — never misses due to gutters unlike elementFromPoint.
+      let bestCell: HTMLDivElement | null = null;
+      let bestRow = -1, bestCol = -1;
+      let bestDist = Infinity;
 
-      if (cell && cell !== lastCenteredElem) {
-        lastCenteredElem = cell;
+      imgRep.forEach((row, r) => {
+        const rowEl = rowArray[r];
+        const rowX = containerX + (gsap.getProperty(rowEl, "x") as number);
+        const rowY = containerY + (gsap.getProperty(rowEl, "y") as number);
 
-        // Find indices in current grid state
-        let rIdx = -1, cIdx = -1;
-        imgRep.forEach((row, r) => {
-          const c = row.indexOf(cell as HTMLDivElement);
-          if (c !== -1) { rIdx = r; cIdx = c; }
+        row.forEach((cell, c) => {
+          const cellCX = rowX + (gsap.getProperty(cell, "x") as number) + boxWidth / 2;
+          const cellCY = rowY + boxHeight / 2; // cell GSAP y is always 0
+          const dist = Math.abs(cellCX - cx) + Math.abs(cellCY - cy);
+          if (dist < bestDist) {
+            bestDist = dist;
+            bestCell = cell;
+            bestRow = r;
+            bestCol = c;
+          }
         });
+      });
 
-        if (rIdx !== -1) {
-          const rDiff = rIdx - rowMidIndex;
-          const cDiff = cIdx - imgMidIndex;
+      if (bestCell && bestCell !== lastCenteredElem) {
+        lastCenteredElem = bestCell;
 
-          if (rDiff > 0) recycleRowsDown(rDiff);
-          else if (rDiff < 0) recycleRowsUp(Math.abs(rDiff));
+        const rDiff = bestRow - rowMidIndex;
+        const cDiff = bestCol - imgMidIndex;
 
-          if (cDiff > 0) recycleColsRight(cDiff);
-          else if (cDiff < 0) recycleColsLeft(Math.abs(cDiff));
-        }
+        if (rDiff > 0) recycleRowsDown(rDiff);
+        else if (rDiff < 0) recycleRowsUp(Math.abs(rDiff));
+
+        if (cDiff > 0) recycleColsRight(cDiff);
+        else if (cDiff < 0) recycleColsLeft(Math.abs(cDiff));
       }
     }
 
@@ -258,8 +260,8 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
 
       // 3. Calculate the center offset
       // We want the middle cell (rowMidIndex, imgMidIndex) to be at (vw/2, vh/2)
-      const startX = (vw / 2) - (imgMidIndex * horizSpacing) - (boxWidth / 2);
-      const startY = (vh / 2) - (rowMidIndex * vertSpacing) - (boxHeight / 2);
+      startX = (vw / 2) - (imgMidIndex * horizSpacing) - (boxWidth / 2);
+      startY = (vh / 2) - (rowMidIndex * vertSpacing) - (boxHeight / 2);
 
       // 4. Reset the container and apply new positions to rows and cells
       gsap.set(containerRef.current, { x: 0, y: 0 });
@@ -320,10 +322,8 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
       gsap.set(containerRef.current, {
         x: curX - e.deltaX,
         y: curY - e.deltaY,
-        onComplete: updateCenterElem // Trigger the infinite recycling
       });
 
-      // Also call it immediately for smoother recycling during fast scrolls
       updateCenterElem();
     };
 

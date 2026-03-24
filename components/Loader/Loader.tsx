@@ -15,19 +15,23 @@ const Loader = ({ isLoading }: LoaderProps) => {
       // let the exit animation finish before unmounting
       const t = setTimeout(() => setVisible(false), 600);
       return () => clearTimeout(t);
-    } else {
-      setVisible(true);
     }
   }, [isLoading]);
 
-  if (!visible) return null;
+  if (!visible && !isLoading) return null;
 
   return (
     <div className={`${styles.overlay} ${!isLoading ? styles.exit : ""}`}>
-      <div className={styles.bracket}>
-        <span className={styles.bracketLeft}>[</span>
-        <span className={styles.dot}>·</span>
-        <span className={styles.bracketRight}>]</span>
+      <div className={styles.wrapper}>
+        <p className={`${styles.wrapper__item} ${styles.wrapper__text}`}>Loading experience</p>
+
+        <div className={`${styles.wrapper__item} ${styles.bracket}`}>
+          <span className={styles.bracketLeft}>[</span>
+          <span className={styles.dot}>·</span>
+          <span className={styles.bracketRight}>]</span>
+        </div>
+
+        <p className={`${styles.wrapper__item} ${styles.wrapper__text} ${styles.wrapper__text_right}`}>it won&apos;t be long</p>
       </div>
     </div>
   );
