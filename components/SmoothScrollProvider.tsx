@@ -11,11 +11,13 @@ export default function SmoothScrollProvider({ children }: { children: React.Rea
   useEffect(() => {
     if (pathname.includes("/studio")) return;
 
+    const isHomepage = pathname === "/";
+
     const lenis = new Lenis({
       lerp: 0.08,
       wheelMultiplier: 1,
       smoothWheel: true,
-      infinite: true,
+      infinite: isHomepage,
     });
 
     gsap.ticker.add((time) => {
@@ -86,7 +88,6 @@ export default function SmoothScrollProvider({ children }: { children: React.Rea
       lenis.scrollTo(window.scrollY + momentum, { lerp: 0.05 });
     };
 
-    const isHomepage = pathname === "/";
     if (isHomepage) {
       window.addEventListener("mousedown", handleMouseDown);
       window.addEventListener("mousemove", handleMouseMove);
