@@ -9,15 +9,6 @@
     left: 0;
     overflow: hidden;
 
-    &__image {
-      position: absolute;
-      inset: 0;
-      background-size: cover;
-      background-position: center;
-      scale: 1.05;
-      will-change: opacity, transform;
-    }
-
     &__overlay {
       position: absolute;
       inset: 0;
@@ -76,6 +67,7 @@
     &__col {
       display: flex;
       flex-direction: column;
+      opacity: 0;
     }
   }
 }

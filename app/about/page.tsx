@@ -8,14 +8,14 @@ import styles from "./page.module.scss";
 import { urlFor } from "@/lib/sanity.image";
 import Link from "next/link";
 import { aboutPageIntro } from "@/app/animations";
+import AboutBg from "@/components/AboutBg/AboutBg";
 
 export default function AboutPage() {
   const [about, setAbout] = useState<About | null>(null);
   const [bgUrl, setBgUrl] = useState("");
 
-  const infoRef = useRef<HTMLDivElement>(null);
-  const stackColRef = useRef<HTMLDivElement>(null);
-  const achievementsColRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const bgCanvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     client.fetch(aboutQueries.all).then((data) => setAbout(data as About));
@@ -30,27 +30,27 @@ export default function AboutPage() {
   }, [about]);
 
   useEffect(() => {
-    if (about && infoRef.current && stackColRef.current && achievementsColRef.current) {
-      aboutPageIntro(stackColRef.current, infoRef.current, achievementsColRef.current);
-    }
-  }, [about]);
+    if (!about || !contentRef.current || !bgUrl) return;
+    const els = Array.from(
+      contentRef.current.querySelectorAll<HTMLElement>("[data-anim='about-el']")
+    );
+    aboutPageIntro(els, bgCanvasRef.current ?? undefined);
+  }, [about, bgUrl]);
 
   return (
     <div className={styles.page}>
 
-      <div className={styles.page__bg}>
-        <div
-          className={styles.page__bg__image}
-          data-anim="bg"
-          style={{ backgroundImage: bgUrl ? `url(${bgUrl})` : "none" }}
-        />
-        <div className={styles.page__bg__overlay} />
-      </div>
+      {bgUrl && (
+        <div className={styles.page__bg}>
+          <AboutBg ref={bgCanvasRef} src={bgUrl} />
+          <div className={styles.page__bg__overlay} />
+        </div>
+      )}
 
-      <div className={styles.page__content}>
+      <div className={styles.page__content} ref={contentRef}>
 
         {/* ── INFORMATION ── */}
-        <div className={styles.page__info} ref={infoRef} data-anim="about-el">
+        <div className={styles.page__info} data-anim="about-el">
           <p className={styles.label}>INFORMATION</p>
           <div className={styles.page__info__text}>
             <PortableText value={about?.description || []} />
@@ -61,7 +61,7 @@ export default function AboutPage() {
         <div className={styles.page__grid}>
 
           {/* Services */}
-          <div className={styles.page__grid__col} ref={stackColRef} data-anim="about-el">
+          <div className={styles.page__grid__col} data-anim="about-el">
             <p className={styles.label}>SERVICES</p>
             <ul className={styles.list}>
               {about?.stack?.map((item, i) => <li key={i}>{item}</li>)}
@@ -77,7 +77,7 @@ export default function AboutPage() {
           </div>
 
           {/* Achievements */}
-          <div className={styles.page__grid__col} ref={achievementsColRef} data-anim="about-el">
+          <div className={styles.page__grid__col} data-anim="about-el">
             <p className={styles.label}>ACHIEVEMENTS</p>
             <ul className={styles.list}>
               {about?.achievements?.map((item, i) => (
@@ -97,7 +97,9 @@ export default function AboutPage() {
             <ul className={styles.list}>
               {about?.social?.map((item, i) => (
                 <li key={i}>
-                  <Link href={item.url} target="_blank">{item.name}</Link>
+                  <Link href={item.url} target="_blank">
+                    ↳ {item.name}
+                  </Link>
                 </li>
               ))}
             </ul>

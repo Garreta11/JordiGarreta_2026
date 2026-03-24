@@ -124,7 +124,7 @@ const Navigation = () => {
           {about?.email}
         </a>
          {/* ── COPYRIGHT ── */}
-        <div className={`${styles.navigation__contact__item} ${styles.navigation__contact__item__copyright}`} data-anim="about-el">
+        <div className={`${styles.navigation__contact__item} ${styles.navigation__contact__item__copyright}`}>
           <p>© 2026 Jordi Garreta. All rights reserved.</p>
         </div>
 

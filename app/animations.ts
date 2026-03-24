@@ -157,26 +157,24 @@ export const postPageIntro = (
    ---------------------------------- */
 
    export const aboutPageIntro = (
-    stackEl: HTMLElement,
-    descEl: HTMLElement,
-    achievementsEl: HTMLElement
+    els: HTMLElement[],
+    bgEl?: HTMLElement
   ) => {
     const tl = gsap.timeline();
-    tl.fromTo(stackEl, 
-      { opacity: 0, x: -40 }, 
-      { opacity: 1, x: 0, duration: 0.9, ease: "expo.out" }, 
-    )
-    .fromTo(descEl, 
-      { opacity: 0, y: 30 }, 
-      { opacity: 1, y: 0, duration: 0.9, ease: "expo.out" }, 
-      "-=0.7"
-    )
-    .fromTo(achievementsEl, 
-      { opacity: 0, x: 40 }, 
-      { opacity: 1, x: 0, duration: 0.9, ease: "expo.out" }, 
-      "-=0.8"
+
+    if (bgEl) {
+      tl.fromTo(bgEl,
+        { opacity: 0, scale: 0 },
+        { opacity: 1, scale: 1.05, duration: 1.2, ease: "expo.out" }
+      );
+    }
+
+    tl.fromTo(els,
+      { opacity: 0, y: 30 },
+      { opacity: 1, y: 0, duration: 0.9, ease: "expo.out", stagger: 0.08 },
+      bgEl ? "-=0.8" : undefined
     );
-  
+
     return tl;
   };
   
