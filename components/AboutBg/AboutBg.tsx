@@ -2,8 +2,8 @@
 import { forwardRef, useEffect, useRef } from "react";
 import * as THREE from "three";
 import styles from "./AboutBg.module.scss";
-import vertShader from "./bg.vert";
-import fragShader from "./bg.frag";
+import vertShader from "./bg-vertex.glsl";
+import fragShader from "./bg-fragment.glsl";
 
 const TRAIL_LEN       = 50;
 const DISTORTION_STRENGTH = 0.05;
@@ -67,12 +67,13 @@ const AboutBg = forwardRef<HTMLCanvasElement, Props>(({ src }, ref) => {
     window.addEventListener("mousemove", onMouseMove);
 
     // RAF loop
-    const clock = new THREE.Clock();
+    const timer = new THREE.Timer();
     let rafId: number;
 
     const tick = () => {
       rafId = requestAnimationFrame(tick);
-      uniforms.uTime.value += clock.getDelta();
+      timer.update();
+      uniforms.uTime.value += timer.getDelta();
 
       // Smooth mouse
       smoothMouse.lerp(rawMouse, 0.04);
