@@ -122,11 +122,7 @@ export default function Home() {
     fetchDescription();
   }, []);
 
-  const infinitePosts = useMemo(() => {
-    if (!posts || posts.length === 0) return [];
-    // return [...posts, posts[0]];
-    return posts;
-  }, [posts]);
+  const infinitePosts = useMemo(() => posts, [posts]);
 
   /* ----------------------------------
      Init 3D Slider
@@ -157,9 +153,10 @@ export default function Home() {
       lastScroll = scroll;
       smoothVelocity += (rawVelocity - smoothVelocity) * 0.1;
 
-      const position = progress * (infinitePosts.length - 1);
+      const position = progress * infinitePosts.length;
       positionRef.current = position;
-      setCurrentPost(infinitePosts[Math.round(position)]);
+      const idx = ((Math.round(position)) % infinitePosts.length + infinitePosts.length) % infinitePosts.length;
+      setCurrentPost(infinitePosts[idx]);
 
       const mappedVelocity = mapValue(Math.abs(smoothVelocity), 0, 15, 0, 5);
       const clampVelocity = Math.max(0, Math.min(mappedVelocity, 2));

@@ -169,18 +169,21 @@ export default class InfiniteSlider {
     // Auto-fit the flat row to the camera's visible width at z=0
     const fovRad = (70 * Math.PI) / 180;
     const visibleWidth = 2 * Math.tan(fovRad / 2) * this.camera.position.z;
-    const gap = (visibleWidth * 1) / (count - 1); // 85% of screen width
+    const gap = (visibleWidth * 1) / (count - 1);
 
     const totalWidth = (count - 1) * gap;
 
     this.meshes.forEach((mesh, i) => {
-      const delta = i - position;
+      // Modular delta: wraps items continuously around the spiral with no jump
+      let delta = ((i - position) % count + count) % count;
+      if (delta > count / 2) delta -= count;
+
       const angle = (delta / count) * Math.PI * 2 * loops * horizontalSpacing;
       const spiralY = -delta * verticalSpacing;
       const flatX = i * gap - totalWidth / 2;
 
       mesh.position.x = flatX * (1 - t);
-      mesh.position.y = flatX * 0 + (spiralY - 0) * t; // flatY = 0
+      mesh.position.y = (spiralY) * t;
       mesh.position.z = 0;
 
       mesh.material.uniforms.spiralAngle.value = angle * t;

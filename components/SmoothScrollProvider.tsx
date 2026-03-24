@@ -15,7 +15,7 @@ export default function SmoothScrollProvider({ children }: { children: React.Rea
       lerp: 0.08,
       wheelMultiplier: 1,
       smoothWheel: true,
-      infinite: false,
+      infinite: true,
     });
 
     gsap.ticker.add((time) => {
