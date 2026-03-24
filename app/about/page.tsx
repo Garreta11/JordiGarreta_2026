@@ -15,6 +15,7 @@ export default function AboutPage() {
   const [bgUrl, setBgUrl] = useState("");
 
   const contentRef = useRef<HTMLDivElement>(null);
+  const bgRef = useRef<HTMLDivElement>(null);
   const bgCanvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -34,18 +35,29 @@ export default function AboutPage() {
     const els = Array.from(
       contentRef.current.querySelectorAll<HTMLElement>("[data-anim='about-el']")
     );
-    aboutPageIntro(els, bgCanvasRef.current ?? undefined);
+    aboutPageIntro(els, bgRef.current ?? undefined);
   }, [about, bgUrl]);
 
   return (
     <div className={styles.page}>
 
       {bgUrl !== "" && (
-        <div className={styles.page__bg}>
-          <AboutBg ref={bgCanvasRef} src={bgUrl} />
-          <div className={styles.page__bg__overlay} />
-        </div>
+        <>
+          <div className={styles.page__wrapper}>
+            <div
+              ref={bgRef}
+              className={styles.page__wrapper__bg}
+              style={{ backgroundImage: bgUrl ? `url(${bgUrl})` : "none" }}
+              data-anim="post-bg"
+            />
+          </div>
+          {/* <div className={styles.page__bg}>
+            <AboutBg ref={bgCanvasRef} src={bgUrl} />
+          </div> */}
+        </>
+
       )}
+      <div className={styles.page__overlay} />
 
       <div className={styles.page__content} ref={contentRef}>
 
