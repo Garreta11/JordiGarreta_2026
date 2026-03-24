@@ -1,7 +1,7 @@
 .page {
 
+  padding-bottom: 8rem;
   @media (max-width: 640px) {
-    padding-bottom: 8rem;
   }
 
   /* ----------------------------------
@@ -135,16 +135,18 @@
       padding: 2rem;
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
-
+      gap: 10rem;
+      
       @media (max-width: 1024px) {
         // On tablet, media takes right column; details drops below
+        gap: 5rem;
         grid-row: 1;
         grid-column: 2;
         padding: 1rem;
       }
-
+      
       @media (max-width: 640px) {
+        gap: 3rem;
         grid-row: unset;
         grid-column: unset;
       }
