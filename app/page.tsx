@@ -354,6 +354,8 @@ export default function Home() {
             <div className={`${styles.page__project__item} ${styles.page__project__link}`}>
               <button
                 className={`${styles.page__project__link__button} underline`}
+                onMouseEnter={() => handlePreload(urlFor(currentPost.mainImage).url())}
+                onClick={() => handleViewMore(currentPost.slug, urlFor(currentPost.mainImage).url())}
               >
                 VIEW MORE
                 <svg
