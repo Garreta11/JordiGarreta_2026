@@ -3,9 +3,12 @@ uniform float uRadius;
 uniform float uPlaneAspect;
 uniform float uTextureAspect;
 uniform float uDeform;
+uniform vec2 uMouseNDC;
+uniform float uMouseStrength;
 varying vec2 vUv;
-varying vec2 vUvCorrected;    // add this
+varying vec2 vUvCorrected;
 varying vec3 vPosition;
+varying float vMouseInfluence;
 
 void main() {
     vec3 pos = position;
@@ -38,6 +41,15 @@ void main() {
     pos.z += sin(position.y * 3.0 + 100.) * uDeform * 0.07;
     pos.y += sin(position.x * 3.0) * uDeform * 0.04;
 
+    // Mouse distortion: project this vertex to NDC, measure distance to mouse,
+    // then bulge toward the camera with a gaussian falloff
+    vec4 proj = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+    vec2 ndcPos = proj.xy / proj.w;
+    float mouseDist = length(ndcPos - uMouseNDC);
+    float bulge = exp(-mouseDist * mouseDist * 5.0) * uMouseStrength;
+    pos.z += bulge * 0.5;
+
+    vMouseInfluence = bulge;
     vUvCorrected = uv + 0.5;
 
     vPosition = pos;

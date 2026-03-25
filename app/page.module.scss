@@ -57,6 +57,7 @@
     -webkit-backface-visibility: hidden;
     
     will-change: backdrop-filter, -webkit-backdrop-filter;
+
   }
 
   /* ----------------------------------
@@ -79,6 +80,7 @@
      Project info bar
   ---------------------------------- */
   &__project {
+    pointer-events: none;
     position: fixed;
     padding: 1rem;
     z-index: 2;
@@ -98,7 +100,8 @@
 
     cursor: pointer;
 
-    &:hover {
+    &:hover,
+    &--hovered {
       backdrop-filter: blur(10px);
       background-color: rgba(32, 33, 35, 0.2);
 
@@ -169,7 +172,7 @@
     top: 0;
     left: 0;
     overflow: hidden;
-    pointer-events: none;
+    /* pointer-events: none; */
     opacity: 0;
     perspective: 1000px;
     transform-style: preserve-3d;

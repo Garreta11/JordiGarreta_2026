@@ -15,6 +15,8 @@ export default class InfiniteSlider {
 
     this.container = options.dom;
     this.images = options.images;
+    this.onHover = options.onHover ?? null;
+    this.onClick = options.onClick ?? null;
 
     this.width = this.container.offsetWidth;
     this.height = this.container.offsetHeight;
@@ -46,6 +48,8 @@ export default class InfiniteSlider {
     this.gltfLoader = new GLTFLoader();
     this.raycaster = new THREE.Raycaster();
     this.mouse = new THREE.Vector2();
+    this.smoothMouse = new THREE.Vector2(999, 999); // GSAP-animated, fed to shaders each frame
+    this._mouseStrength = 0.0;
     this.time = 0;
     this.isPlaying = true;
 
@@ -68,8 +72,12 @@ export default class InfiniteSlider {
 
     // Store bound references so they can be removed later
     this._onClick = this.setupClick.bind(this);
+    this._onMouseMove = this._handleMouseMove.bind(this);
+    this._onMouseLeave = this._handleMouseLeave.bind(this);
 
     window.addEventListener('click', this._onClick, false);
+    this.container.addEventListener('mousemove', this._onMouseMove, false);
+    this.container.addEventListener('mouseleave', this._onMouseLeave, false);
   }
 
   addObjects() {
@@ -87,6 +95,8 @@ export default class InfiniteSlider {
         uTextureAspect: { value: 1.0 },
         uDeform: { value: 0.0 },
         opacity: { value: 1.0 },
+        uMouseNDC: { value: new THREE.Vector2(999, 999) },
+        uMouseStrength: { value: 0.0 },
       },
       vertexShader: vertex,
       fragmentShader: fragment,
@@ -175,7 +185,7 @@ export default class InfiniteSlider {
 
     this.meshes.forEach((mesh, i) => {
       // Modular delta: wraps items continuously around the spiral with no jump
-      let delta = ((i - position) % count + count) % count;
+      let delta = (((i - position) % count) + count) % count;
       if (delta > count / 2) delta -= count;
 
       const angle = (delta / count) * Math.PI * 2 * loops * horizontalSpacing;
@@ -183,7 +193,7 @@ export default class InfiniteSlider {
       const flatX = i * gap - totalWidth / 2;
 
       mesh.position.x = flatX * (1 - t);
-      mesh.position.y = (spiralY) * t;
+      mesh.position.y = spiralY * t;
       mesh.position.z = 0;
 
       mesh.material.uniforms.spiralAngle.value = angle * t;
@@ -227,21 +237,56 @@ export default class InfiniteSlider {
     });
   }
 
-  setupClick(event) {
-    if (!this.meshes.length) return;
-
+  _handleMouseMove(event) {
     const rect = this.container.getBoundingClientRect();
-    const mouseNDC = new THREE.Vector2(
-      ((event.clientX - rect.left) / this.width) * 2 - 1,
-      -((event.clientY - rect.top) / this.height) * 2 + 1,
-    );
+    const x = ((event.clientX - rect.left) / this.width) * 2 - 1;
+    const y = -((event.clientY - rect.top) / this.height) * 2 + 1;
+    gsap.to(this.smoothMouse, {
+      x,
+      y,
+      duration: 0.6,
+      ease: 'power3.out',
+      overwrite: true,
+    });
+    gsap.to(this, {
+      _mouseStrength: 1.0,
+      duration: 0.4,
+      ease: 'power2.out',
+      overwrite: 'auto',
+    });
 
-    // The vertex shader displaces each mesh center to:
-    //   x = radius * sin(spiralAngle)   (localBend=0 at center)
-    //   y = mesh.position.y
-    //   z = radius * cos(spiralAngle)
-    // Raycasting against the flat geometry would miss these positions,
-    // so we project each actual center to NDC and find the nearest one.
+    const mesh = this._findMeshAtNDC(new THREE.Vector2(x, y));
+    const slug = mesh?.userData.slug ?? null;
+    if (slug) {
+      this.onHover?.(slug);
+    }
+  }
+
+  _handleMouseLeave() {
+    gsap.to(this, {
+      _mouseStrength: 0.0,
+      duration: 0.6,
+      ease: 'power2.out',
+      overwrite: 'auto',
+    });
+
+    this.container.style.cursor = 'default';
+    this.onHover?.(null);
+  }
+
+  // The vertex shader displaces each mesh center to:
+  //   x = radius * sin(spiralAngle)   (localBend=0 at center)
+  //   y = mesh.position.y
+  //   z = radius * cos(spiralAngle)
+  // Raycasting against the flat geometry would miss these positions,
+  // so we project each actual center to NDC and find the nearest one.
+  _findMeshAtNDC(mouseNDC) {
+    if (!this.meshes.length) return null;
+
+    // Mesh half-diagonal in local space (PlaneGeometry 1.0 x 1.95)
+    const meshHalfDiag = Math.hypot(0.5, 0.975);
+    const halfTanFov = Math.tan((this.camera.fov * Math.PI) / 180 / 2);
+
     const candidates = [];
 
     this.meshes.forEach((mesh) => {
@@ -253,23 +298,38 @@ export default class InfiniteSlider {
         mesh.position.y,
         radius * Math.cos(angle),
       );
-      worldPos.project(this.camera);
 
-      const dist = Math.hypot(worldPos.x - mouseNDC.x, worldPos.y - mouseNDC.y);
-      if (dist < 0.2) {
-        candidates.push({ mesh, dist, ndcZ: worldPos.z });
+      const camDist = this.camera.position.distanceTo(worldPos);
+      const threshold = meshHalfDiag / (halfTanFov * camDist);
+
+      const projected = worldPos.clone().project(this.camera);
+      const dist = Math.hypot(
+        projected.x - mouseNDC.x,
+        projected.y - mouseNDC.y,
+      );
+
+      if (dist < threshold) {
+        candidates.push({ mesh, dist, camDist });
       }
     });
 
-    // Among hits, prefer the one closest to the camera (smallest NDC z)
-    candidates.sort((a, b) => a.ndcZ - b.ndcZ);
-    const closestMesh = candidates[0]?.mesh ?? null;
+    candidates.sort((a, b) => a.camDist - b.camDist || a.dist - b.dist);
+    return candidates[0]?.mesh ?? null;
+  }
 
-    if (closestMesh) {
-      const slug = closestMesh.userData.slug;
-      if (slug) {
-        console.log(slug);
-      }
+  setupClick(event) {
+    if (!this.meshes.length) return;
+
+    const rect = this.container.getBoundingClientRect();
+    const mouseNDC = new THREE.Vector2(
+      ((event.clientX - rect.left) / this.width) * 2 - 1,
+      -((event.clientY - rect.top) / this.height) * 2 + 1,
+    );
+
+    const mesh = this._findMeshAtNDC(mouseNDC);
+    const slug = mesh?.userData.slug;
+    if (slug) {
+      this.onClick?.(slug);
     }
   }
 
@@ -346,7 +406,12 @@ export default class InfiniteSlider {
     if (!this.isPlaying) return;
 
     this.time += 0.05;
-    this.materials.forEach((m) => (m.uniforms.time.value = this.time));
+
+    this.materials.forEach((m) => {
+      m.uniforms.time.value = this.time;
+      m.uniforms.uMouseNDC.value.copy(this.smoothMouse);
+      m.uniforms.uMouseStrength.value = this._mouseStrength;
+    });
 
     if (this.model) {
       // Update model environment
@@ -376,6 +441,8 @@ export default class InfiniteSlider {
 
     // Remove event listeners
     window.removeEventListener('click', this._onClick);
+    this.container.removeEventListener('mousemove', this._onMouseMove);
+    this.container.removeEventListener('mouseleave', this._onMouseLeave);
 
     // Dispose geometries, materials, textures
     this.meshes.forEach((mesh) => {

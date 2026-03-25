@@ -46,6 +46,7 @@ export default function Home() {
   const projectRef = useRef<HTMLDivElement>(null);
   const descriptionRef = useRef<HTMLDivElement>(null);
 
+  const currentPostRef = useRef<Post | null>(null);
   const introPlayedRef = useRef(false);
   const isExitingRef = useRef(false);
 
@@ -134,6 +135,17 @@ export default function Home() {
       dom: document.getElementById("container") as HTMLElement,
       images: infinitePosts,
       router: router,
+      onHover: (slug: string | null) => {
+        const isCurrentPost = slug !== null && slug === currentPostRef.current?.slug;
+        projectRef.current?.classList.toggle(styles['page__project--hovered'], isCurrentPost);
+        (document.getElementById("container") as HTMLElement).style.cursor = isCurrentPost ? 'pointer' : 'default';
+      },
+      onClick: (slug: string) => {
+        const isCurrentPost = slug !== null && slug === currentPostRef.current?.slug;
+        if (currentPost?.mainImage && isCurrentPost) {
+          handleViewMore(slug, urlFor(currentPost.mainImage).url() )
+        }
+      }
     });
 
     sketchRef.current = sketch;
@@ -156,6 +168,7 @@ export default function Home() {
       const position = progress * infinitePosts.length;
       positionRef.current = position;
       const idx = ((Math.round(position)) % infinitePosts.length + infinitePosts.length) % infinitePosts.length;
+      currentPostRef.current = infinitePosts[idx];
       setCurrentPost(infinitePosts[idx]);
 
       const mappedVelocity = mapValue(Math.abs(smoothVelocity), 0, 15, 0, 5);
