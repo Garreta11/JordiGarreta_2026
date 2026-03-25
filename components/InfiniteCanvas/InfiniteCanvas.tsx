@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { Draggable } from 'gsap/Draggable';
 import { InertiaPlugin } from 'gsap/InertiaPlugin';
@@ -18,6 +18,13 @@ interface InfiniteCanvasProps {
   labs: Lab[];
 }
 
+interface ExpandedItem {
+  lab: Lab;
+  media: { type: string; url: string };
+  rect: DOMRect;
+  aspect: number; // intrinsic width / height
+}
+
 function getLabMedia(lab: Lab, seed: number) {
   if (lab.mediaType === 'video' && lab.video) {
     return { type: 'video', url: videoUrlFor(lab.video) };
@@ -31,6 +38,67 @@ function getLabMedia(lab: Lab, seed: number) {
 const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [expandedItem, setExpandedItem] = useState<ExpandedItem | null>(null);
+  const hasDraggedRef = useRef(false);
+  const lightboxRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const isClosingRef = useRef(false);
+
+  function closeExpanded() {
+    if (!expandedItem || !lightboxRef.current || !overlayRef.current || isClosingRef.current) return;
+    isClosingRef.current = true;
+
+    const { rect } = expandedItem;
+    gsap.to(overlayRef.current, { opacity: 0, duration: 0.3, ease: 'power2.in' });
+    gsap.to(lightboxRef.current, {
+      left: rect.left,
+      top: rect.top,
+      width: rect.width,
+      height: rect.height,
+      borderRadius: '5px',
+      duration: 0.5,
+      ease: 'power3.inOut',
+      onComplete: () => {
+        setExpandedItem(null);
+        isClosingRef.current = false;
+      },
+    });
+  }
+
+  // Animate open whenever expandedItem is set
+  useLayoutEffect(() => {
+    if (!expandedItem || !lightboxRef.current || !overlayRef.current) return;
+
+    const { rect, aspect } = expandedItem;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    // Fit the intrinsic aspect ratio within 85vw × 85vh
+    const maxW = vw * 0.85;
+    const maxH = vh * 0.85;
+    let targetW = maxW;
+    let targetH = targetW / aspect;
+    if (targetH > maxH) {
+      targetH = maxH;
+      targetW = targetH * aspect;
+    }
+    const targetLeft = (vw - targetW) / 2;
+    const targetTop = (vh - targetH) / 2;
+
+    gsap.fromTo(overlayRef.current, { opacity: 0 }, { opacity: 1, duration: 0.4, ease: 'power2.out' });
+    gsap.fromTo(
+      lightboxRef.current,
+      { left: rect.left, top: rect.top, width: rect.width, height: rect.height, borderRadius: '5px' },
+      { left: targetLeft, top: targetTop, width: targetW, height: targetH, borderRadius: '12px', duration: 0.65, ease: 'power3.inOut' }
+    );
+  }, [expandedItem]);
+
+  // Escape key to close
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeExpanded(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [expandedItem]);
 
   useEffect(() => {
     if (!labs.length || !containerRef.current) return;
@@ -55,7 +123,6 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
     const rowMidIndex = Math.floor(rowNum / 2);
 
     function onMediaLoaded() {
-      // Simple counter logic remains same
       setIsLoading(false);
     }
 
@@ -65,7 +132,6 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
       rowArray = [];
       imgRep = [];
 
-      // Check for touch/mobile device
       const isMobile = window.matchMedia('(max-width: 768px)').matches;
 
       for (let y = 0; y < rowNum; y++) {
@@ -89,10 +155,8 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
             video.playsInline = true;
             video.preload = 'metadata';
 
-
             if (isMobile) {
               cell.addEventListener('touchstart', () => {
-                // Pause all other videos
                 containerRef.current?.querySelectorAll('video').forEach((v) => {
                   if (v !== video) v.pause();
                 });
@@ -109,13 +173,33 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
             }
 
             video.addEventListener('canplay', onMediaLoaded, { once: true });
+            video.addEventListener('loadedmetadata', () => {
+              cell.dataset.mediaW = String(video.videoWidth);
+              cell.dataset.mediaH = String(video.videoHeight);
+            }, { once: true });
             cell.appendChild(video);
           } else {
+            const img = new Image();
+            img.onload = () => {
+              cell.dataset.mediaW = String(img.naturalWidth);
+              cell.dataset.mediaH = String(img.naturalHeight);
+            };
+            img.src = media.url;
             cell.style.backgroundImage = `url(${media.url})`;
             onMediaLoaded();
           }
 
-          // Deterministic random offsets — stored normalised [-1, 1] and scaled in resize()
+          // Click to expand
+          cell.addEventListener('click', () => {
+            if (hasDraggedRef.current) return;
+            const rect = cell.getBoundingClientRect();
+            const mw = parseFloat(cell.dataset.mediaW ?? '0');
+            const mh = parseFloat(cell.dataset.mediaH ?? '0');
+            // Fall back to cell aspect ratio if metadata not yet loaded
+            const aspect = mw && mh ? mw / mh : rect.width / rect.height;
+            setExpandedItem({ lab, media, rect, aspect });
+          });
+
           cell.dataset.offsetX = String((Math.random() - 0.5) * 2);
           cell.dataset.offsetY = String((Math.random() - 0.5) * 2);
 
@@ -132,7 +216,6 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
       }
     }
 
-    // Fixed array mover to handle DOM state better
     function moveArrayIndex<T>(array: T[], oldIndex: number, newIndex: number) {
       if (newIndex >= array.length) { let k = newIndex - array.length + 1; while (k--) { array.push(undefined as unknown as T); } }
       array.splice(newIndex, 0, array.splice(oldIndex, 1)[0]);
@@ -142,7 +225,6 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
       for (let i = 0; i < steps; i++) {
         const firstRowY = gsap.getProperty(rowArray[0], "y") as number;
         const last = rowArray[rowArray.length - 1];
-        // New row goes above the current first row — its offset alternates from the first row's
         const firstIsOffset = rowArray[0].dataset.offset === "true";
         const newIsOffset = !firstIsOffset;
         gsap.set(last, {
@@ -159,7 +241,6 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
       for (let i = 0; i < steps; i++) {
         const lastRowY = gsap.getProperty(rowArray[rowArray.length - 1], "y") as number;
         const first = rowArray[0];
-        // New row goes below the current last row — its offset alternates from the last row's
         const lastIsOffset = rowArray[rowArray.length - 1].dataset.offset === "true";
         const newIsOffset = !lastIsOffset;
         gsap.set(first, {
@@ -201,8 +282,6 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
       const containerX = gsap.getProperty(containerRef.current, "x") as number;
       const containerY = gsap.getProperty(containerRef.current, "y") as number;
 
-      // Find the cell whose center is closest to the viewport center using
-      // transform math — never misses due to gutters unlike elementFromPoint.
       let bestCell: HTMLDivElement | null = null;
       let bestRow = -1, bestCol = -1;
       let bestDist = Infinity;
@@ -214,7 +293,7 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
 
         row.forEach((cell, c) => {
           const cellCX = rowX + (gsap.getProperty(cell, "x") as number) + boxWidth / 2;
-          const cellCY = rowY + boxHeight / 2; // cell GSAP y is always 0
+          const cellCY = rowY + boxHeight / 2;
           const dist = Math.abs(cellCX - cx) + Math.abs(cellCY - cy);
           if (dist < bestDist) {
             bestDist = dist;
@@ -243,33 +322,26 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
       const vh = window.innerHeight;
       const vw = window.innerWidth;
 
-      // 1. Determine orientation-based sizing
       if (vh > vw) {
-        // Vertical Screen (Mobile)
-        boxHeight = vh * 0.1; // Use 35% of height as base
-        boxWidth = boxHeight / 0.7; // Portrait aspect ratio
+        boxHeight = vh * 0.1;
+        boxWidth = boxHeight / 0.7;
         gutter = vw * 0.2;
       } else {
-        // Horizontal Screen (Desktop)
-        boxWidth = vw * 0.1; // Use 35% of width as base
-        boxHeight = boxWidth * 0.7; // Landscape aspect ratio
+        boxWidth = vw * 0.1;
+        boxHeight = boxWidth * 0.7;
         gutter = vw * 0.1;
       }
       horizSpacing = boxWidth + gutter;
       vertSpacing = boxHeight + gutter;
 
-      // 3. Calculate the center offset
-      // We want the middle cell (rowMidIndex, imgMidIndex) to be at (vw/2, vh/2)
       startX = (vw / 2) - (imgMidIndex * horizSpacing) - (boxWidth / 2);
       startY = (vh / 2) - (rowMidIndex * vertSpacing) - (boxHeight / 2);
 
-      // 4. Reset the container and apply new positions to rows and cells
       gsap.set(containerRef.current, { x: 0, y: 0 });
 
       rowArray.forEach((row, i) => {
         const isOdd = i % 2 !== 0;
         gsap.set(row, {
-          // Offset every other row by half a box width for the "brick" layout
           x: isOdd ? startX - (boxWidth / 2) : startX,
           y: startY + (i * vertSpacing)
         });
@@ -284,8 +356,6 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
             x: idx * horizSpacing,
             y: 0,
           });
-          // CSS left/top are independent from GSAP's transform x/y,
-          // so recycling logic stays unaffected
           cell.style.left = `${ox * boxWidth * 0.2}px`;
           cell.style.top  = `${oy * boxHeight * 0.3}px`;
         });
@@ -299,26 +369,24 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
       type: 'x,y',
       trigger: containerRef.current.parentElement!,
       inertia: true,
-      onDrag: updateCenterElem,
+      onPress: () => {
+        hasDraggedRef.current = false;
+        gsap.killTweensOf(containerRef.current);
+      },
+      onDrag: () => {
+        hasDraggedRef.current = true;
+        updateCenterElem();
+      },
       onThrowUpdate: updateCenterElem,
-      onPress: () => gsap.killTweensOf(containerRef.current),
     });
 
-    // --- NEW WHEEL/TRACKPAD LOGIC START ---
     const handleWheel = (e: WheelEvent) => {
-      // Prevent default browser behavior (like "swipe to go back")
       e.preventDefault();
-
-      // Kill any active inertia throws if the user starts scrolling
       gsap.killTweensOf(containerRef.current);
 
-      // Get current positions
       const curX = gsap.getProperty(containerRef.current, "x") as number;
       const curY = gsap.getProperty(containerRef.current, "y") as number;
 
-      // Update positions based on scroll delta
-      // deltaX/Y are standard for trackpads; we subtract to move the "canvas" 
-      // in the direction of the finger swipe
       gsap.set(containerRef.current, {
         x: curX - e.deltaX,
         y: curY - e.deltaY,
@@ -331,7 +399,6 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
     if (containerWrapper) {
       containerWrapper.addEventListener('wheel', handleWheel, { passive: false });
     }
-    // --- NEW WHEEL/TRACKPAD LOGIC END ---
 
     window.addEventListener('resize', resize);
 
@@ -348,6 +415,27 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
     <div className={styles.wrapper} style={{ overflow: 'hidden', width: '100vw', height: '100vh' }}>
       <Loader isLoading={isLoading} />
       <div ref={containerRef} className={styles.container} style={{ willChange: 'transform' }} />
+
+      {expandedItem && (
+        <>
+          <div ref={overlayRef} className={styles.overlay} onClick={closeExpanded} />
+          <div ref={lightboxRef} className={styles.lightbox}>
+            {expandedItem.media.type === 'video' ? (
+              <video
+                src={expandedItem.media.url}
+                autoPlay
+                loop
+                playsInline
+              />
+            ) : (
+              <div
+                className={styles.lightboxImage}
+                style={{ backgroundImage: `url(${expandedItem.media.url})` }}
+              />
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 };
