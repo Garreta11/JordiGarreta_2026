@@ -130,7 +130,7 @@ const Navigation = () => {
               <span className={styles.dot}>{viewMode === "spiral" ? `·` : ` `}</span>
               <span className={styles.bracketRight}>]</span>
             </span>
-            <span className={styles.label}> {`Spiral`}</span>
+            <span className={styles.label}> {`Gallery`}</span>
           </button>
           <button
             className={`${styles.navigation__toggle__btn} ${viewMode === "list" ? styles.active : ""}`}
