@@ -198,8 +198,9 @@ export default class InfiniteSlider {
 
       mesh.material.uniforms.spiralAngle.value = angle * t;
       mesh.material.uniforms.uRadius.value = radius * t;
+      const d = Math.abs(delta);
       mesh.material.uniforms.distanceFromCenter.value =
-        t * (1 - Math.min(Math.abs(delta), 1) ** 2);
+        t * Math.exp(-d * d * 1.0);
       mesh.material.uniforms.spiralHeight.value = spiralY * t;
     });
   }

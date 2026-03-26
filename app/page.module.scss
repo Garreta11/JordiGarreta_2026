@@ -1,7 +1,7 @@
 .page {
   position: relative;
   width: 100%;
-  height: 100svh;
+  min-height: 100dvh;
 
   &__wrap {
     display: none;
@@ -80,7 +80,6 @@
      Project info bar
   ---------------------------------- */
   &__project {
-    pointer-events: none;
     position: fixed;
     padding: 1rem;
     z-index: 2;
@@ -112,10 +111,7 @@
     }
 
     @media (max-width: 768px) {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      justify-content: center;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 0.5rem;
     }
 
@@ -150,15 +146,27 @@
         align-items: center;
         gap: 0.75rem;
         transition: gap 0.3s ease-in-out, opacity 0.2s ease;
+
+        span {
+          @media (max-width: 768px) {
+            display: none;
+          }
+        }
       }
     }
 
     &__category {
       // Alias handled via nth-child above; explicit class allows direct override
+      @media (max-width: 768px) {
+        text-align: center;
+      }
     }
 
     &__year {
       // Alias handled via nth-child above; explicit class allows direct override
+      @media (max-width: 768px) {
+        display: none;
+      }
     }
   }
 
@@ -177,6 +185,165 @@
     perspective: 1000px;
     transform-style: preserve-3d;
     will-change: transform, opacity;
+  }
+
+  /* ----------------------------------
+     List view
+  ---------------------------------- */
+  &__list {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    overflow-y: auto;
+    flex-direction: column;
+    padding: 4rem 0rem 6rem;
+    background-color: rgba(32, 33, 35, 0.96);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+
+    @media (max-width: 768px) {
+      padding: 5rem 0rem 8rem;
+    }
+
+    &__wrapper {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    &__item {
+      display: grid;
+      grid-template-columns: 2rem 5rem 1fr auto auto;
+      align-items: center;
+      gap: 1.5rem;
+      padding: 1rem;
+      border-bottom: 1px solid rgba(244, 244, 246, 0.1);
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: rgba(244, 244, 246, 0.04);
+
+        .page__list__item__link span {
+          &::after {
+            width: 100%;
+          }
+        }
+      }
+
+      @media (max-width: 768px) {
+        grid-template-columns: 3.5rem 1fr auto;
+        gap: 0.875rem;
+        padding: 1rem;
+        align-items: center;
+      }
+
+      &__index {
+        opacity: 0.3;
+        font-size: 11px;
+        flex-shrink: 0;
+
+        @media (max-width: 768px) {
+          display: none;
+        }
+      }
+
+      &__thumb {
+        width: 5rem;
+        height: 3.5rem;
+        overflow: hidden;
+        flex-shrink: 0;
+        background-color: rgba(244, 244, 246, 0.05);
+
+        @media (max-width: 768px) {
+          width: 3.5rem;
+          height: 4.5rem;
+        }
+
+        img {
+          object-fit: cover;
+          width: 100%;
+          height: 100%;
+          display: block;
+        }
+      }
+
+      &__info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        min-width: 0;
+      }
+
+      &__title {
+        opacity: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      &__meta {
+        opacity: 0.45;
+      }
+
+      &__mobileMeta {
+        display: none;
+        font-size: 10px;
+        opacity: 0.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        @media (max-width: 768px) {
+          display: block;
+          margin-top: 0.2rem;
+        }
+      }
+
+      &__right {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.25rem;
+
+        @media (max-width: 768px) {
+          display: none;
+        }
+      }
+
+      &__year {
+        font-size: 11px;
+        opacity: 0.45;
+      }
+
+      &__tools {
+        font-size: 11px;
+        opacity: 0.3;
+      }
+
+      &__link {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        opacity: 0.6;
+        transition: opacity 0.2s ease;
+        flex-shrink: 0;
+
+        span {
+          @media (max-width: 768px) {
+            display: none;
+          }
+        }
+      }
+
+      &:hover &__link {
+        opacity: 1;
+      }
+    }
   }
 }
 

@@ -8,7 +8,8 @@ import { client } from "@/sanity/lib/client";
 import { aboutQueries } from "@/lib/queries/about.queries";
 import { useState, useEffect } from "react";
 // Import your exit animations
-import { fadeOutHomeText, aboutPageExit, slideOutPostContent, labExit } from "@/app/animations"; 
+import { fadeOutHomeText, aboutPageExit, slideOutPostContent, labExit } from "@/app/animations";
+import { useViewMode } from "@/lib/context/ViewModeContext";
 
 const links = [
   { label: "Work", href: "/" },
@@ -20,6 +21,7 @@ const Navigation = () => {
   const pathname = usePathname();
   const router = useRouter();
   const [about, setAbout] = useState<About | null>(null);
+  const { viewMode, setViewMode } = useViewMode();
 
   useEffect(() => {
     const fetchAbout = async () => {
@@ -100,11 +102,11 @@ const Navigation = () => {
               : pathname === link.href;
 
           return (
-            <a
+            <Link
               key={link.href}
               href={link.href}
               onClick={(e) => handleNavigation(e, link.href)}
-              className={`${styles.link} ${isActive ? styles.active : ""}`}
+              className={`${styles.link} ${isActive ? styles.link__active : ""}`}
             >
               <span className={styles.bracket}>
                 <span className={styles.bracketLeft}>[</span>
@@ -112,17 +114,45 @@ const Navigation = () => {
                 <span className={styles.bracketRight}>]</span>
               </span>
               <span className={styles.label}> {link.label}</span>
-            </a>
+            </Link>
           );
         })}
       </nav>
+
+      {pathname === "/" && (
+        <div className={styles.navigation__toggle}>
+          <button
+            className={`${styles.navigation__toggle__btn} ${viewMode === "spiral" ? styles.active : ""}`}
+            onClick={() => setViewMode("spiral")}
+          >
+            <span className={styles.bracket}>
+              <span className={styles.bracketLeft}>[</span>
+              <span className={styles.dot}>{viewMode === "spiral" ? `·` : ` `}</span>
+              <span className={styles.bracketRight}>]</span>
+            </span>
+            <span className={styles.label}> {`Spiral`}</span>
+          </button>
+          <button
+            className={`${styles.navigation__toggle__btn} ${viewMode === "list" ? styles.active : ""}`}
+            onClick={() => setViewMode("list")}
+          >
+            <span className={styles.bracket}>
+              <span className={styles.bracketLeft}>[</span>
+              <span className={styles.dot}>{viewMode === "list" ? `·` : ` `}</span>
+              <span className={styles.bracketRight}>]</span>
+            </span>
+            <span className={styles.label}> {`List`}</span>
+          </button>
+        </div>
+      )}
+
       <div className={styles.navigation__contact}>
-        <a href={`tel:${about?.phone}`} className={styles.navigation__contact__item}>
+        <Link href={`tel:${about?.phone}`} className={styles.navigation__contact__item}>
           {about?.phone}
-        </a>
-        <a href={`mailto:${about?.email}`} className={styles.navigation__contact__item}>
+        </Link>
+        <Link href={`mailto:${about?.email}`} className={styles.navigation__contact__item}>
           {about?.email}
-        </a>
+        </Link>
          {/* ── COPYRIGHT ── */}
         <div className={`${styles.navigation__contact__item} ${styles.navigation__contact__item__copyright}`}>
           <p>© 2026 Jordi Garreta. All rights reserved.</p>

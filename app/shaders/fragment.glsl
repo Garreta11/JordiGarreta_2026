@@ -11,9 +11,10 @@ void main() {
 
 	vec4 t = texture2D(texture1, distortedUV);
 
-	float bw = (t.r + t.g + t.b) / 3.;
-	vec4 another = vec4(bw, bw, bw, 1.0);
+	float bw = (t.r + t.g + t.b) / 9.;
+	vec3 tint = vec3(0.125, 0.129, 0.137); // #202123
+	vec4 another = vec4(mix(tint, vec3(1.0), bw), 1.0);
 
 	gl_FragColor = mix(another, t, distanceFromCenter);
-	gl_FragColor.a = clamp(distanceFromCenter, 0.1, 1.) * opacity;
+	gl_FragColor.a = clamp(distanceFromCenter, 0.8, 1.) * opacity;
 }

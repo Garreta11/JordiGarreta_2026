@@ -38,6 +38,38 @@
     }
   }
 
+  &__toggle {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    pointer-events: auto;
+
+    @media (max-width: 768px) {
+      flex-direction: row;
+      gap: 1rem;
+    }
+
+    &__btn {
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: inherit;
+      color: inherit;
+      display: flex;
+      align-items: center;
+      opacity: 0.45;
+      transition: opacity 0.3s ease;
+      gap: 0.5rem;
+
+      &:hover,
+      &.active {
+        opacity: 1;
+      }
+    }
+  }
+
   &__contact {
     display: flex;
     flex-direction: column;
@@ -60,5 +92,20 @@
         }
       }
     }
+  }
+}
+
+.link {
+  color: var(--background);
+  opacity: 0.45;
+  transition: opacity 0.3s ease;
+  
+  &__active {
+    opacity: 1;
+    
+  }
+  
+  &:hover {
+    opacity: 1;
   }
 }

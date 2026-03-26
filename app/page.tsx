@@ -16,6 +16,7 @@ import { PortableText } from "@portabletext/react";
 import type { PortableTextBlock } from "@portabletext/types";
 import { fadeOutHomeText, homePageIntro } from "@/app/animations";
 import Loader from "@/components/Loader/Loader";
+import { useViewMode } from "@/lib/context/ViewModeContext";
 
 const mapValue = (value: number, min: number, max: number, newMin: number, newMax: number) => {
   return (value - min) / (max - min) * (newMax - newMin) + newMin;
@@ -28,8 +29,13 @@ export default function Home() {
   const [currentPost, setCurrentPost] = useState<Post | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const { viewMode } = useViewMode();
+
   const sketchRef = useRef<InfiniteSlider | null>(null);
   const rafRef = useRef<number | null>(null);
+  const listViewRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const isListViewRef = useRef(false);
   
   const radiusRef = useRef(3);
   const positionRef = useRef(0);
@@ -156,6 +162,10 @@ export default function Home() {
 
     const animate = () => {
       if (!sketchRef.current || isExitingRef.current) return;
+      if (isListViewRef.current) {
+        rafRef.current = requestAnimationFrame(animate);
+        return;
+      }
 
       const scroll = window.scrollY;
       const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
@@ -180,8 +190,8 @@ export default function Home() {
       const minSpacing = 0.8;
       const maxSpacing = 0.8;
 
-      const minHSpacing = 1.2;
-      const maxHSpacing = 1.5;
+      const minHSpacing = 1.0;
+      const maxHSpacing = 1.2;
 
       const targetRadius = minRadius + clampVelocity * (maxRadius - minRadius);
       const targetSpacing = minSpacing + clampVelocity * (maxSpacing - minSpacing);
@@ -286,6 +296,62 @@ export default function Home() {
   }, []);
 
   
+  /* ----------------------------------
+     View mode transitions
+  ---------------------------------- */
+  useEffect(() => {
+    const containerEl = document.getElementById("container");
+    if (!containerEl || !listViewRef.current) return;
+
+    if (viewMode === "list") {
+      isListViewRef.current = true;
+
+      // Fade out spiral elements
+      gsap.to(containerEl, { opacity: 0, duration: 0.4, ease: "power2.out" });
+      const spiralEls = [projectRef.current, wrapperRef.current, overlayRef.current].filter(Boolean);
+      if (spiralEls.length) gsap.to(spiralEls, { opacity: 0, duration: 0.3 });
+
+      // Show list and stagger items in
+      gsap.set(listViewRef.current, { display: "flex" });
+      const items = listViewRef.current.querySelectorAll("[data-list-item]");
+      gsap.fromTo(
+        items,
+        { y: 24, opacity: 0 },
+        { y: 0, opacity: 1, stagger: 0.06, duration: 0.5, ease: "power2.out", delay: 0.25 }
+      );
+    } else {
+      // Stagger list items out
+      if (listViewRef.current) {
+        const items = listViewRef.current.querySelectorAll("[data-list-item]");
+        gsap.to(items, {
+          y: -16,
+          opacity: 0,
+          stagger: 0.03,
+          duration: 0.3,
+          ease: "power2.in",
+          onComplete: () => {
+            if (listViewRef.current) gsap.set(listViewRef.current, { display: "none" });
+            isListViewRef.current = false;
+          },
+        });
+      }
+
+      // Fade spiral back in
+      gsap.to(containerEl, { opacity: 1, duration: 0.5, delay: 0.15, ease: "power2.out" });
+      const spiralEls = [projectRef.current, wrapperRef.current, overlayRef.current].filter(Boolean);
+      if (spiralEls.length) gsap.to(spiralEls, { opacity: 1, duration: 0.5, delay: 0.15 });
+    }
+  }, [viewMode]);
+
+  // Intercept wheel events on the list so Lenis never sees them
+  useEffect(() => {
+    if (viewMode !== "list" || !listViewRef.current) return;
+    const listEl = listViewRef.current;
+    const stopProp = (e: WheelEvent) => e.stopPropagation();
+    listEl.addEventListener("wheel", stopProp);
+    return () => listEl.removeEventListener("wheel", stopProp);
+  }, [viewMode]);
+
   const handlePreload = useCallback((imageUrl: string) => {
     const img = new window.Image();
     img.src = imageUrl;
@@ -329,7 +395,7 @@ export default function Home() {
               />
             ))}
           </div>
-          <div className={styles.page__overlay} />
+          <div ref={overlayRef} className={styles.page__overlay} />
 
           <div ref={descriptionRef} className={styles.page__description} data-anim="description">
             {/* <PortableText value={description} /> */}
@@ -357,7 +423,7 @@ export default function Home() {
                 onMouseEnter={() => handlePreload(urlFor(currentPost.mainImage).url())}
                 onClick={() => handleViewMore(currentPost.slug, urlFor(currentPost.mainImage).url())}
               >
-                VIEW MORE
+                <span>VIEW MORE</span>
                 <svg
                   width="10"
                   height="10"
@@ -378,6 +444,55 @@ export default function Home() {
 
 
       <div id="container" className={styles.page__container} />
+
+      <div ref={listViewRef} className={styles.page__list}>
+        <div className={styles.page__list__wrapper}>
+          {posts.map((post, i) => (
+            <div
+              key={post._id}
+              data-list-item
+              className={styles.page__list__item}
+              onClick={() => handleViewMore(post.slug, urlFor(post.mainImage).url())}
+            >
+              <span className={styles.page__list__item__index}>
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <div className={styles.page__list__item__thumb}>
+                <Image
+                  src={urlFor(post.mainImage).url()}
+                  alt={post.title}
+                  width={120}
+                  height={160}
+                  style={{ objectFit: "cover", width: "100%", height: "100%" }}
+                />
+              </div>
+              <div className={styles.page__list__item__info}>
+                <p className={styles.page__list__item__title}>{post.title}</p>
+                <p className={styles.page__list__item__meta}>
+                  {post.basicInfo.category}
+                </p>
+                <p className={styles.page__list__item__mobileMeta}>
+                  {post.basicInfo.year}{post.basicInfo.tools?.length > 0 ? ` · ${post.basicInfo.tools.join(" · ")}` : ""}
+                </p>
+              </div>
+              <div className={styles.page__list__item__right}>
+                <p className={styles.page__list__item__year}>{post.basicInfo.year}</p>
+                {post.basicInfo.tools?.length > 0 && (
+                  <p className={styles.page__list__item__tools}>
+                    {post.basicInfo.tools.join(" · ")}
+                  </p>
+                )}
+              </div>
+              <div className={styles.page__list__item__link}>
+                <span className="underline">VIEW MORE</span>
+                <svg width="10" height="10" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M15.707 0.999999C15.707 0.447715 15.2593 -2.87362e-07 14.707 -5.40243e-07L5.70703 2.60547e-07C5.15475 -7.66277e-08 4.70703 0.447715 4.70703 1C4.70703 1.55228 5.15475 2 5.70703 2L13.707 2L13.707 10C13.707 10.5523 14.1547 11 14.707 11C15.2593 11 15.707 10.5523 15.707 10L15.707 0.999999ZM0.707031 15L1.41414 15.7071L15.4141 1.70711L14.707 1L13.9999 0.292893L-7.55191e-05 14.2929L0.707031 15Z" fill="var(--background)" />
+                </svg>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

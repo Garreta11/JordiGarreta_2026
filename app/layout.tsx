@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.scss";
 import SmoothScrollProvider from "@/components/SmoothScrollProvider";
 import Navigation from "@/components/Navigation/Navigation";
+import { ViewModeProvider } from "@/lib/context/ViewModeContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,11 +27,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <SmoothScrollProvider>
-          {children}
-          <Navigation />
-        </SmoothScrollProvider>
+      <body className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
+        <ViewModeProvider>
+          <SmoothScrollProvider>
+            {children}
+            <Navigation />
+          </SmoothScrollProvider>
+        </ViewModeProvider>
       </body>
     </html>
   );
