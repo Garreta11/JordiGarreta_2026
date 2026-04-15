@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next"
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.scss";
 import SmoothScrollProvider from "@/components/SmoothScrollProvider";
@@ -28,6 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
+        <Analytics />
         <ViewModeProvider>
           <SmoothScrollProvider>
             {children}

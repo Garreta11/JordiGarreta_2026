@@ -14,6 +14,7 @@
     "@sanity/orderable-document-list": "^1.5.1",
     "@sanity/vision": "^4.22.0",
     "@studio-freight/lenis": "^1.0.42",
+    "@vercel/analytics": "^2.0.1",
     "dat.gui": "^0.7.9",
     "gsap": "^3.14.2",
     "next": "16.1.6",
