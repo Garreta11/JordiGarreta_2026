@@ -102,7 +102,7 @@ export default function Header() {
     <header className={styles.header}>
       <div className={styles.header__identity}>
         <span className={styles.header__name}>Jordi Garreta</span>
-        <span className={styles.header__role}>Creative developer</span>
+        <span className={styles.header__role}>Creative developer · Available for work</span>
       </div>
       <div className={styles.header__location}>
         <span className={styles.header__city}>BCN, {time}</span>
