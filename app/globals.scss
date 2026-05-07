@@ -11,13 +11,15 @@
   font-family: var(--font-geist-mono);
   font-feature-settings: "ss03" 1;
   color: var(--background);
+
+  text-transform: uppercase;
   
   &::-webkit-scrollbar {
     display: none;
   }
 }
 
-p, span, li, a {
+p, span, li, a, div {
   font-size: 12px;
   line-height: 15px;
   font-weight: 300;

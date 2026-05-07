@@ -1,60 +1,44 @@
 .header {
   position: fixed;
   top: 1rem;
-  left: 1rem;
+  left: 0; // Cambiado de 1rem a 0 para que el width: 100% y el padding funcionen bien
   z-index: 10000000;
 
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  justify-content: space-between;
-  width: calc(100% - 2rem);
-  pointer-events: none;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr); 
+  column-gap: 20px;
+  row-gap: 20px;
+  padding-left: 20px;
+  padding-right: 20px;
+  box-sizing: border-box;
+  width: 100%;
+  
+  @media (max-width: 768px) {
+    display: flex;
+    justify-content: space-between;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
 
+  // 1. Empieza en la columna 1 (por defecto, pero explícito es mejor)
   &__identity {
-    display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
-
-    @media (max-width: 768px) {
-      width: 50%;
-    }
+    grid-column: 1 / span 3; // Ocupa de la 1 hasta la 3
   }
 
-  &__name {
-    color: var(--background);
-    opacity: 1;
-  }
-
+  // 2. Empieza en la columna 4
   &__role {
-    color: var(--background);
-    opacity: 0.45;
-  }
-
-  &__location {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    text-align: right;
-    gap: 0.15rem;
-
-    @media (max-width: 768px) {
-      width: 50%;
+    grid-column: 4 / span 4; // Empieza en la 4 y le damos un ancho de 4 columnas
+    
+    &__job, &__available {
+      margin: 0; // Limpia márgenes por defecto de los <p>
     }
   }
 
-  &__city {
-    color: var(--background);
-    opacity: 1;
-  }
-
-  &__info {
-    color: var(--background);
-    opacity: 1;
-  }
-
-  &__status {
-    color: var(--background);
-    opacity: 0.45;
+  // 3. Ubicado en la última columna (12)
+  &__location {
+    grid-column: 9 / 13; // Ocupa desde la 9 hasta la línea 13 (final de la col 12)
+    text-align: right;
+    display: flex;
+    flex-direction: column;
   }
 }

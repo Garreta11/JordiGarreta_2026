@@ -13,8 +13,9 @@ import InfiniteSlider from "./InfiniteSlider.js";
 import gsap from "gsap";
 import { useRouter } from "next/navigation";
 import { PortableText } from "@portabletext/react";
+import ProjectList from "@/components/ProjectList/ProjectList";
 import type { PortableTextBlock } from "@portabletext/types";
-import { fadeOutHomeText, homePageIntro } from "@/app/animations";
+import { fadeOutHomeText, homePageIntro, fadeOutListView } from "@/app/animations";
 import Loader from "@/components/Loader/Loader";
 import { useViewMode } from "@/lib/context/ViewModeContext";
 
@@ -51,6 +52,7 @@ export default function Home() {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const projectRef = useRef<HTMLDivElement>(null);
   const descriptionRef = useRef<HTMLDivElement>(null);
+  const followerRef = useRef<HTMLDivElement>(null);
 
   const currentPostRef = useRef<Post | null>(null);
   const introPlayedRef = useRef(false);
@@ -71,6 +73,13 @@ export default function Home() {
   ---------------------------------- */
   const handleViewMore = useCallback(
     (slug: string, imageUrl: string) => {
+      // List view exit
+      if (isListViewRef.current && listViewRef.current) {
+        fadeOutListView(listViewRef.current, () => router.push(`/p/${slug}`));
+        return;
+      }
+
+      // Spiral view exit
       if (!projectRef.current || !descriptionRef.current || !sketchRef.current) return;
 
       isExitingRef.current = true;
@@ -144,7 +153,8 @@ export default function Home() {
       onHover: (slug: string | null) => {
         const isCurrentPost = slug !== null && slug === currentPostRef.current?.slug;
         projectRef.current?.classList.toggle(styles['page__project--hovered'], isCurrentPost);
-        (document.getElementById("container") as HTMLElement).style.cursor = isCurrentPost ? 'pointer' : 'default';
+        (document.getElementById("container") as HTMLElement).style.cursor = isCurrentPost ? 'none' : 'default';
+        gsap.to(followerRef.current, { opacity: isCurrentPost ? 1 : 0, duration: 0.3, ease: "power2.out" });
       },
       onClick: (slug: string) => {
         const isCurrentPost = slug !== null && slug === currentPostRef.current?.slug;
@@ -282,6 +292,15 @@ export default function Home() {
   }, [currentPost]);
 
   useEffect(() => {
+    gsap.set(followerRef.current, { xPercent: -50, yPercent: -50, x: -999, y: -999 });
+    const onMouseMove = (e: MouseEvent) => {
+      gsap.to(followerRef.current, { x: e.clientX, y: e.clientY, duration: 0.4, ease: "power2.out", overwrite: "auto" });
+    };
+    window.addEventListener("mousemove", onMouseMove);
+    return () => window.removeEventListener("mousemove", onMouseMove);
+  }, []);
+
+  useEffect(() => {
     window.exitHomeSketch = (callback: () => void) => {
       if (sketchRef.current) {
         sketchRef.current.exitAnimation(positionRef.current, callback);
@@ -417,82 +436,23 @@ export default function Home() {
             <p className={`${styles.page__project__item} ${styles.page__project__year}`}>
               {currentPost.basicInfo.year}
             </p>
-            <div className={`${styles.page__project__item} ${styles.page__project__link}`}>
-              <button
-                className={`${styles.page__project__link__button} underline`}
-                onMouseEnter={() => handlePreload(urlFor(currentPost.mainImage).url())}
-                onClick={() => handleViewMore(currentPost.slug, urlFor(currentPost.mainImage).url())}
-              >
-                <span>VIEW MORE</span>
-                <svg
-                  width="10"
-                  height="10"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                    <path
-                      d="M15.707 0.999999C15.707 0.447715 15.2593 -2.87362e-07 14.707 -5.40243e-07L5.70703 2.60547e-07C5.15475 -7.66277e-08 4.70703 0.447715 4.70703 1C4.70703 1.55228 5.15475 2 5.70703 2L13.707 2L13.707 10C13.707 10.5523 14.1547 11 14.707 11C15.2593 11 15.707 10.5523 15.707 10L15.707 0.999999ZM0.707031 15L1.41414 15.7071L15.4141 1.70711L14.707 1L13.9999 0.292893L-7.55191e-05 14.2929L0.707031 15Z"
-                      fill="var(--background)"
-                    />
-                </svg>
-              </button>
+            <div className={`${styles.page__project__item} ${styles.page__project__index}`}>
+              {String(posts.findIndex(p => p._id === currentPost._id) + 1).padStart(2, '0')}
             </div>
           </div>
         </>
       )}
 
 
+      <div ref={followerRef} className={styles.page__follower}>[VIEW PROJECT]</div>
+
       <div id="container" className={styles.page__container} />
 
-      <div ref={listViewRef} className={styles.page__list}>
-        <div className={styles.page__list__wrapper}>
-          {posts.map((post, i) => (
-            <div
-              key={post._id}
-              data-list-item
-              className={styles.page__list__item}
-              onClick={() => handleViewMore(post.slug, urlFor(post.mainImage).url())}
-            >
-              <span className={styles.page__list__item__index}>
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <div className={styles.page__list__item__thumb}>
-                <Image
-                  src={urlFor(post.mainImage).url()}
-                  alt={post.title}
-                  width={120}
-                  height={160}
-                  style={{ objectFit: "cover", width: "100%", height: "100%" }}
-                />
-              </div>
-              <div className={styles.page__list__item__info}>
-                <p className={styles.page__list__item__title}>{post.title}</p>
-                <p className={styles.page__list__item__meta}>
-                  {post.basicInfo.category}
-                </p>
-                <p className={styles.page__list__item__mobileMeta}>
-                  {post.basicInfo.year}{post.basicInfo.tools?.length > 0 ? ` · ${post.basicInfo.tools.join(" · ")}` : ""}
-                </p>
-              </div>
-              <div className={styles.page__list__item__right}>
-                <p className={styles.page__list__item__year}>{post.basicInfo.year}</p>
-                {post.basicInfo.tools?.length > 0 && (
-                  <p className={styles.page__list__item__tools}>
-                    {post.basicInfo.tools.join(" · ")}
-                  </p>
-                )}
-              </div>
-              <div className={styles.page__list__item__link}>
-                <span className="underline">VIEW MORE</span>
-                <svg width="10" height="10" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M15.707 0.999999C15.707 0.447715 15.2593 -2.87362e-07 14.707 -5.40243e-07L5.70703 2.60547e-07C5.15475 -7.66277e-08 4.70703 0.447715 4.70703 1C4.70703 1.55228 5.15475 2 5.70703 2L13.707 2L13.707 10C13.707 10.5523 14.1547 11 14.707 11C15.2593 11 15.707 10.5523 15.707 10L15.707 0.999999ZM0.707031 15L1.41414 15.7071L15.4141 1.70711L14.707 1L13.9999 0.292893L-7.55191e-05 14.2929L0.707031 15Z" fill="var(--background)" />
-                </svg>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <ProjectList 
+        ref={listViewRef} 
+        posts={posts} 
+        onProjectClick={handleViewMore} 
+      />
     </div>
   );
 }

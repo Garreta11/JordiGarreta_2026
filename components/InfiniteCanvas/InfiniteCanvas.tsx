@@ -30,7 +30,7 @@ function getLabMedia(lab: Lab, seed: number) {
     return { type: 'video', url: videoUrlFor(lab.video) };
   }
   if (lab.image) {
-    return { type: 'image', url: imageBuilder.image(lab.image).width(600).height(600).url() };
+    return { type: 'image', url: imageBuilder.image(lab.image).width(600).url() };
   }
   return { type: 'image', url: `https://picsum.photos/600/600?random=${seed}` };
 }
@@ -176,6 +176,7 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
             video.addEventListener('loadedmetadata', () => {
               cell.dataset.mediaW = String(video.videoWidth);
               cell.dataset.mediaH = String(video.videoHeight);
+              resize();
             }, { once: true });
             cell.appendChild(video);
           } else {
@@ -183,6 +184,7 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
             img.onload = () => {
               cell.dataset.mediaW = String(img.naturalWidth);
               cell.dataset.mediaH = String(img.naturalHeight);
+              resize();
             };
             img.src = media.url;
             cell.style.backgroundImage = `url(${media.url})`;
@@ -199,9 +201,6 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
             const aspect = mw && mh ? mw / mh : rect.width / rect.height;
             setExpandedItem({ lab, media, rect, aspect });
           });
-
-          cell.dataset.offsetX = String((Math.random() - 0.5) * 2);
-          cell.dataset.offsetY = String((Math.random() - 0.5) * 2);
 
           const title = document.createElement('div');
           title.className = styles.cellTitle;
@@ -292,7 +291,7 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
         const rowY = containerY + (gsap.getProperty(rowEl, "y") as number);
 
         row.forEach((cell, c) => {
-          const cellCX = rowX + (gsap.getProperty(cell, "x") as number) + boxWidth / 2;
+          const cellCX = rowX + (gsap.getProperty(cell, "x") as number) + horizSpacing / 2;
           const cellCY = rowY + boxHeight / 2;
           const dist = Math.abs(cellCX - cx) + Math.abs(cellCY - cy);
           if (dist < bestDist) {
@@ -323,18 +322,32 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
       const vw = window.innerWidth;
 
       if (vh > vw) {
-        boxHeight = vh * 0.1;
+        boxHeight = vh * 0.15;
         boxWidth = boxHeight / 0.7;
-        gutter = vw * 0.2;
-      } else {
-        boxWidth = vw * 0.1;
-        boxHeight = boxWidth * 0.7;
         gutter = vw * 0.1;
+      } else {
+        boxWidth = vw * 0.15;
+        boxHeight = boxWidth * 0.7;
+        gutter = vw * 0.05;
       }
-      horizSpacing = boxWidth + gutter;
       vertSpacing = boxHeight + gutter;
 
-      startX = (vw / 2) - (imgMidIndex * horizSpacing) - (boxWidth / 2);
+      // Use the widest loaded cell to set column spacing so nothing overlaps
+      let maxCellWidth = boxWidth;
+      rowArray.forEach(row => {
+        row.querySelectorAll<HTMLElement>(imageSelector).forEach(cell => {
+          const mw = parseFloat(cell.dataset.mediaW ?? '0');
+          const mh = parseFloat(cell.dataset.mediaH ?? '0');
+          if (mw && mh) {
+            const w = Math.round(boxHeight * (mw / mh));
+            if (w > maxCellWidth) maxCellWidth = w;
+          }
+        });
+      });
+
+      horizSpacing = maxCellWidth + gutter;
+
+      startX = (vw / 2) - (imgMidIndex * horizSpacing) - (maxCellWidth / 2);
       startY = (vh / 2) - (rowMidIndex * vertSpacing) - (boxHeight / 2);
 
       gsap.set(containerRef.current, { x: 0, y: 0 });
@@ -342,22 +355,23 @@ const InfiniteCanvas = ({ labs }: InfiniteCanvasProps) => {
       rowArray.forEach((row, i) => {
         const isOdd = i % 2 !== 0;
         gsap.set(row, {
-          x: isOdd ? startX - (boxWidth / 2) : startX,
+          x: isOdd ? startX - (horizSpacing / 2) : startX,
           y: startY + (i * vertSpacing)
         });
 
         const cells = row.querySelectorAll<HTMLElement>(imageSelector);
         cells.forEach((cell, idx) => {
-          const ox = parseFloat(cell.dataset.offsetX ?? '0');
-          const oy = parseFloat(cell.dataset.offsetY ?? '0');
+          const mw = parseFloat(cell.dataset.mediaW ?? '0');
+          const mh = parseFloat(cell.dataset.mediaH ?? '0');
+          const cellWidth = mw && mh ? Math.round(boxHeight * (mw / mh)) : boxWidth;
           gsap.set(cell, {
-            width: boxWidth,
+            width: cellWidth,
             height: boxHeight,
             x: idx * horizSpacing,
             y: 0,
           });
-          cell.style.left = `${ox * boxWidth * 0.2}px`;
-          cell.style.top  = `${oy * boxHeight * 0.3}px`;
+          cell.style.left = '0';
+          cell.style.top  = '0';
         });
       });
     }

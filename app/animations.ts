@@ -71,33 +71,32 @@ export const homePageIntro = (
    ---------------------------------- */
 
 export const slideOutPostContent = (
+  headerEl: HTMLElement,
   infoEl: HTMLElement,
   mediaItems: HTMLElement[],
-  detailsEl: HTMLElement,
-  bgEl: HTMLElement
+  bgEl: HTMLElement,
+  onComplete: () => void
 ) => {
-  const tl = gsap.timeline();
+  const tl = gsap.timeline({ onComplete });
 
-  tl.to([infoEl, detailsEl], {
+  tl.to([headerEl, infoEl], {
     opacity: 0,
-    y: -30,
+    y: -16,
+    duration: 0.35,
+    ease: "power2.in",
+    stagger: 0.04,
+  })
+  .to(mediaItems, {
+    opacity: 0,
+    duration: 0.3,
+    ease: "power2.in",
+  }, "<")
+  .to(bgEl, {
+    opacity: 0,
+    scale: 1.08,
     duration: 0.5,
     ease: "power2.in",
-    stagger: 0.05,
-  })
-    .to(mediaItems, {
-      opacity: 0,
-      y: -40,
-      duration: 0.5,
-      ease: "power2.in",
-      stagger: 0.04,
-    }, "<")
-    .to(bgEl, {
-      opacity: 0,
-      scale: 1.05,
-      duration: 0.6,
-      ease: "power2.in",
-    }, "-=0.2");
+  }, "-=0.15");
 
   return tl;
 };
@@ -197,6 +196,44 @@ export const postPageIntro = (
     })
   
     return tl;
+  };
+
+  /* ----------------------------------
+     LIST VIEW EXIT
+     ---------------------------------- */
+
+  export const fadeOutListView = (
+    listEl: HTMLElement,
+    onComplete: () => void
+  ) => {
+    const items = listEl.querySelectorAll<HTMLElement>("[data-list-item]");
+    const tl = gsap.timeline({ onComplete });
+    tl.to(Array.from(items).reverse(), {
+      opacity: 0,
+      y: -20,
+      duration: 0.3,
+      stagger: 0.04,
+      ease: "power2.in",
+    }).to(listEl, {
+      opacity: 0,
+      duration: 0.3,
+      ease: "power2.in",
+    }, "-=0.1");
+    return tl;
+  };
+
+  /* ----------------------------------
+     MORE PROJECTS EXIT
+     ---------------------------------- */
+
+  export const moreProjectsExit = (items: HTMLElement[]) => {
+    return gsap.to(items, {
+      opacity: 0,
+      y: -10,
+      duration: 0.25,
+      stagger: 0.03,
+      ease: "power2.in",
+    });
   };
 
   /* ----------------------------------

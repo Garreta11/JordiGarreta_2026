@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { postPageIntro, slideOutPostContent } from "@/app/animations";
 import Link from "next/link";
 import gsap from "gsap";
+import MoreProjects from "@/components/MoreProjects/MoreProjects";
 
 export default function PostPage({
   params,
@@ -25,9 +26,10 @@ export default function PostPage({
   const [bgLoaded, setBgLoaded] = useState(false);
 
   const bgRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
   const infoRef = useRef<HTMLDivElement>(null);
-  const detailsRef = useRef<HTMLDivElement>(null);
   const mediaItemsRef = useRef<HTMLElement[]>([]);
+  const mediaContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!slug) return;
@@ -53,42 +55,64 @@ export default function PostPage({
     if (
       !bgLoaded ||
       !bgRef.current ||
+      !headerRef.current ||
       !infoRef.current ||
-      !detailsRef.current ||
       mediaItemsRef.current.length === 0
     ) return;
 
     gsap.set(bgRef.current, { opacity: 0, scale: 1.05 });
-    gsap.set(infoRef.current, { opacity: 0, translateX: -40 });
-    gsap.set(detailsRef.current, { opacity: 0, translateX: -40 });
-    gsap.set(mediaItemsRef.current, { opacity: 0, translateY: 60 });
+    gsap.set(headerRef.current, { opacity: 0, x: -40 });
+    gsap.set(infoRef.current, { opacity: 0, x: -40 });
+    gsap.set(mediaItemsRef.current, { opacity: 0, y: 60 });
 
     postPageIntro(
       bgRef.current,
       infoRef.current,
       mediaItemsRef.current,
-      detailsRef.current
+      headerRef.current
     );
   }, [bgLoaded]);
 
+  const updateMediaPadding = useCallback(() => {
+    const container = mediaContainerRef.current;
+    const items = mediaItemsRef.current;
+    if (!container || items.length === 0) return;
+
+    const vh = window.innerHeight;
+    const first = items[0];
+    const last = items[items.length - 1];
+
+    if (first) container.style.paddingTop = `${Math.max(0, (vh - first.offsetHeight) / 2)}px`;
+    if (last) container.style.paddingBottom = `${Math.max(0, (vh - last.offsetHeight) / 2)}px`;
+  }, []);
+
+  useEffect(() => {
+    if (!post) return;
+
+    const ro = new ResizeObserver(updateMediaPadding);
+    mediaItemsRef.current.forEach(item => ro.observe(item));
+    window.addEventListener("resize", updateMediaPadding);
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", updateMediaPadding);
+    };
+  }, [post, updateMediaPadding]);
+
   // Unified Exit & Navigate function
   const navigateTo = useCallback((target: string) => {
-    if (
-      !bgRef.current ||
-      !infoRef.current ||
-      !detailsRef.current ||
-      mediaItemsRef.current.length === 0
-    ) {
+    if (!bgRef.current || !headerRef.current || !infoRef.current) {
       router.push(target);
       return;
     }
 
     slideOutPostContent(
+      headerRef.current,
       infoRef.current,
       mediaItemsRef.current,
-      detailsRef.current,
-      bgRef.current
-    ).eventCallback("onComplete", () => router.push(target));
+      bgRef.current,
+      () => router.push(target)
+    );
   }, [router]);
 
   return (
@@ -106,7 +130,63 @@ export default function PostPage({
           <div className={styles.page__overlay} />
 
           <div className={styles.page__content}>
-            <div ref={infoRef} className={styles.page__content__info} style={{ opacity: 0 }} data-anim="post-info">
+
+            <div ref={headerRef} className={styles.page__content__header} data-anim="post-header">
+              <h1 className={styles.page__content__header__title}>{post.title}</h1>
+              <p className={styles.page__content__header__category}>{post.basicInfo.category}</p>
+              <p className={styles.page__content__header__year}>{post.basicInfo.year}</p>
+              <button className={styles.page__content__header__close} onClick={() => navigateTo("/")}>
+                [CLOSE]</button>
+            </div>
+
+            <div className={styles.page__content__wrapper}>
+              <div ref={infoRef} className={styles.page__content__wrapper__info} data-anim="post-info">
+                <div className={styles.page__content__wrapper__info__item}>
+                  <p className={styles.page__content__wrapper__info__item__title}>OVERVIEW</p>
+                  <div className={styles.page__content__wrapper__info__item__description}>
+                    <PortableText value={post.description} />
+                    {post.basicInfo.link && (
+                      <div className={styles.page__content__wrapper__info__item__link}>
+                        <Link href={post.basicInfo.link} target="_blank">
+                          [{post.basicInfo.link.replace(/^https?:\/\//, '')}]
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className={styles.page__content__wrapper__info__item}>
+                  <p className={styles.page__content__wrapper__info__item__title}>CLIENT</p>
+                  <p className={styles.page__content__wrapper__info__item__description}>{post.basicInfo.client}</p>
+                </div>
+                <div className={styles.page__content__wrapper__info__item}>
+                  <p className={styles.page__content__wrapper__info__item__title}>ROLE</p>
+                  <p className={styles.page__content__wrapper__info__item__description}>{post.basicInfo.role}</p>
+                </div>
+                <div className={styles.page__content__wrapper__info__item}>
+                  <p className={styles.page__content__wrapper__info__item__title}>TOOLS</p>
+                  <p className={styles.page__content__wrapper__info__item__description}>{post.basicInfo.tools.join(", ")}</p>
+                </div>
+              </div>
+
+              <div ref={mediaContainerRef} className={styles.page__content__wrapper__media}>
+                {post.media.map((media, index) => {
+                  const src = media["_type"] === "image" ? urlFor(media).url() : videoUrlFor(media as any);
+                  return (
+                    <div key={index} className={styles.page__content__wrapper__media__item} ref={(el) => { if (el) mediaItemsRef.current[index] = el; }} data-anim="post-media">
+                      {media["_type"] === "image" ? (
+                        <Image src={src} alt={post.title} width={800} height={800} className={styles.page__content__wrapper__media__image} />
+                      ) : (
+                        <video src={src} autoPlay muted loop playsInline className={styles.page__content__wrapper__media__video} />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <MoreProjects currentSlug={slug} onProjectClick={(s) => navigateTo(`/p/${s}`)} />
+
+            {/* <div ref={infoRef} className={styles.page__content__info} style={{ opacity: 0 }} data-anim="post-info">
               <button onClick={() => navigateTo("/")} className={styles.page__content__info__back}>
                 <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
                   <path d="M15.707 0.999999C15.707 0.447715 15.2593 -2.87362e-07 14.707 -5.40243e-07L5.70703 2.60547e-07C5.15475 -7.66277e-08 4.70703 0.447715 4.70703 1C4.70703 1.55228 5.15475 2 5.70703 2L13.707 2L13.707 10C13.707 10.5523 14.1547 11 14.707 11C15.2593 11 15.707 10.5523 15.707 10L15.707 0.999999ZM0.707031 15L1.41414 15.7071L15.4141 1.70711L14.707 1L13.9999 0.292893L-7.55191e-05 14.2929L0.707031 15Z" fill="currentColor"/>
@@ -118,11 +198,10 @@ export default function PostPage({
 
               <div className={styles.page__content__info__description}>
                 <PortableText value={post.description} />
-              </div>
+              </div>              
+            </div> */}
 
-              
-            </div>
-
+            {/*
             <div className={styles.page__content__media}>
               {post.media.map((media, index) => {
                 const src = media["_type"] === "image" ? urlFor(media).url() : videoUrlFor(media as any);
@@ -137,8 +216,9 @@ export default function PostPage({
                 );
               })}
             </div>
+            */}
 
-            <div ref={detailsRef} className={styles.page__content__details} style={{ opacity: 0 }} data-anim="post-details">
+            {/* <div ref={detailsRef} className={styles.page__content__details} style={{ opacity: 0 }} data-anim="post-details">
               <table className={styles.page__content__details__table}>
                 <tbody>
                   <tr className={styles.page__content__details__table__row}><td className={styles.page__content__details__table__cell}>Client</td><td className={styles.page__content__details__table__cell}>{post.basicInfo.client}</td></tr>
@@ -157,8 +237,6 @@ export default function PostPage({
                   </svg>
                 </Link>
               )}
-
-              {/* NEW NAVIGATION BUTTONS */}
               <div className={styles.page__content__details__nav}>
                 {post.prev && (
                   <button onClick={() => navigateTo(`/p/${post.prev?.slug}`)} className={styles.nav_btn}>
@@ -173,7 +251,7 @@ export default function PostPage({
                   </button>
                 )}
               </div>
-            </div>
+            </div> */}
           </div>
         </>
       )}

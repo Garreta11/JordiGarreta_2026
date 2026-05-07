@@ -63,7 +63,7 @@ export default function AboutPage() {
 
         {/* ── INFORMATION ── */}
         <div className={styles.page__info} data-anim="about-el">
-          <p className={styles.label}>INFORMATION</p>
+          <p className={styles.page__info__title}>INFORMATION</p>
           <div className={styles.page__info__text}>
             <PortableText value={about?.description || []} />
           </div>
@@ -85,6 +85,7 @@ export default function AboutPage() {
             <p className={styles.label}>CLIENTS & AGENCIES</p>
             <ul className={styles.list}>
               {about?.clients?.map((item, i) => <li key={i}>{item}</li>)}
+              <li>... AMONG OTHERS</li>
             </ul>
           </div>
 
@@ -102,15 +103,15 @@ export default function AboutPage() {
           <div className={styles.page__grid__col} data-anim="about-el">
             <p className={styles.label}>CONTACT</p>
             <ul className={styles.list}>
-              <li>M. {about?.email}</li>
-              <li>P. {about?.phone}</li>
+              <li>[{about?.email}]</li>
+              <li>[{about?.phone}]</li>
             </ul>
             <p className={`${styles.label} ${styles.label__gap}`}>SOCIAL</p>
             <ul className={styles.list}>
               {about?.social?.map((item, i) => (
                 <li key={i}>
-                  <Link href={item.url} target="_blank">
-                    ↳ {item.name}
+                  <Link href={item.url} target="_blank" className={styles.page__grid__col__link}>
+                    [{item.name}]
                   </Link>
                 </li>
               ))}

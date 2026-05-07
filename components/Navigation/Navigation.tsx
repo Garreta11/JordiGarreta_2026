@@ -67,12 +67,15 @@ const Navigation = () => {
         () => router.push("/")
       );
     } else if (pathname.startsWith("/p/")) {
-       exitTimeline = slideOutPostContent(
-         document.querySelector('[data-anim="post-info"]')!,
-         Array.from(document.querySelectorAll('[data-anim="post-media"]')),
-         document.querySelector('[data-anim="post-details"]')!,
-         document.querySelector('[data-anim="post-bg"]')!
-       );
+      const header = document.querySelector('[data-anim="post-header"]') as HTMLElement | null;
+      const info = document.querySelector('[data-anim="post-info"]') as HTMLElement | null;
+      const media = Array.from(document.querySelectorAll('[data-anim="post-media"]')) as HTMLElement[];
+      const bg = document.querySelector('[data-anim="post-bg"]') as HTMLElement | null;
+
+      if (header && info && bg) {
+        slideOutPostContent(header, info, media, bg, () => router.push(href));
+        return;
+      }
     } else if (pathname === "/lab") {
       exitTimeline = labExit(
         Array.from(document.querySelectorAll('[data-anim="lab-el"]')) as HTMLElement[],
@@ -148,16 +151,13 @@ const Navigation = () => {
 
       <div className={styles.navigation__contact}>
         <Link href={`tel:${about?.phone}`} className={styles.navigation__contact__item}>
-          {about?.phone}
+          <span className={styles.navigation__contact__item__label}>[PHONE]</span>
+          <span className={styles.navigation__contact__item__value}>[{about?.phone}]</span>
         </Link>
         <Link href={`mailto:${about?.email}`} className={styles.navigation__contact__item}>
-          {about?.email}
+          <span className={styles.navigation__contact__item__label}>[EMAIL]</span>
+          <span className={styles.navigation__contact__item__value}>[{about?.email}]</span>
         </Link>
-         {/* ── COPYRIGHT ── */}
-        <div className={`${styles.navigation__contact__item} ${styles.navigation__contact__item__copyright}`}>
-          <p>© 2026 Jordi Garreta. All rights reserved.</p>
-        </div>
-
       </div>
     </div>
   );

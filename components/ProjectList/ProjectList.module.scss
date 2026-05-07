@@ -1,0 +1,222 @@
+.list {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  overflow-y: auto;
+  flex-direction: column;
+  padding: 4rem 0rem 6rem;
+  background-color: rgba(32, 33, 35, 0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+
+  @media (max-width: 768px) {
+    padding: 5rem 0rem 8rem;
+  }
+
+  &__bg_container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    background-color: #202123;
+  }
+
+  &__bg_layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    will-change: opacity; // Optimización de rendimiento
+  }
+
+  &__bg_overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1; // Por encima de las dos imágenes de fondo
+    background-color: rgba(32, 33, 35, 0.4);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+  }
+
+  &__preview {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    width: 40vw; // Ajusta el tamaño a tu gusto
+    aspect-ratio: 16 / 10;
+    z-index: 1; // Detrás del texto
+    pointer-events: none; // Permite hacer click en la lista a través de la imagen
+    opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+                opacity 0.4s ease;
+    overflow: hidden;
+
+    &__layer {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      will-change: opacity;
+    }
+
+    &--active {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    @media (max-width: 768px) {
+      display: none; // Normalmente en móvil no queremos este efecto
+    }
+  }
+
+  &__wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+
+    &::before,
+    &::after {
+      content: '';
+      flex: 1;
+      min-height: 4rem;
+    }
+    
+    &::after {
+      @media (max-width: 768px) {
+        min-height: 10rem;
+      }
+    }
+  }
+
+  &__item {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    column-gap: 20px;
+    row-gap: 20px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-left: 20px;
+    padding-right: 20px;
+    box-sizing: border-box;
+    width: 100%;
+
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    background-color: rgba(40, 40, 40, 0);
+
+    &:hover {
+      background-color: rgba(40, 40, 40, 0.05);
+      backdrop-filter: blur(20px);
+      z-index: 2;
+    }
+
+    @media (max-width: 768px) {
+      display: grid;
+      grid-template-columns: 2rem 1fr auto;
+      grid-template-rows: auto auto;
+      column-gap: 10px;
+      row-gap: 2px;
+      padding: 12px 16px;
+      align-items: start;
+      border-bottom: 1px solid rgba(244, 244, 246, 0.06);
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &:active {
+        background-color: rgba(244, 244, 246, 0.04);
+      }
+    }
+
+    &__index {
+      opacity: 0.3;
+      font-size: 11px;
+      grid-column: 1 / span 1;
+      align-self: center;
+
+      @media (max-width: 768px) {
+        display: flex;
+        align-items: center;
+        grid-column: 1;
+        grid-row: 1 / span 2;
+        align-self: center;
+        font-size: 10px;
+      }
+    }
+
+    &__info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      min-width: 0;
+    }
+
+    &__title {
+      grid-column: 2 / span 3;
+      opacity: 1;
+
+      @media (max-width: 768px) {
+        grid-column: 2;
+        grid-row: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+
+    &__category {
+      grid-column: 5 / span 1;
+
+      @media (max-width: 768px) {
+        grid-column: 2;
+        grid-row: 2;
+        font-size: 10px;
+        opacity: 0.45;
+      }
+    }
+
+    &__tools {
+      grid-column: 7 / span 4;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      @media (max-width: 768px) {
+        display: none;
+      }
+    }
+
+    &__year {
+      grid-column: 12 / span 1;
+      font-size: 11px;
+      text-align: right;
+      align-self: center;
+
+      @media (max-width: 768px) {
+        grid-column: 3;
+        grid-row: 1 / span 2;
+        align-self: center;
+        font-size: 10px;
+        opacity: 0.45;
+      }
+    }
+  }
+}

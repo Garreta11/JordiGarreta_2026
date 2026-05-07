@@ -102,13 +102,16 @@ export default function Header() {
     <header className={styles.header}>
       <div className={styles.header__identity}>
         <span className={styles.header__name}>Jordi Garreta</span>
-        <span className={styles.header__role}>Creative developer · Available for work</span>
       </div>
+      
+      <div className={styles.header__role}>
+        <p className={styles.header__role__job}>Creative developer</p>
+        <p className={styles.header__role__available}>Available for work</p>
+      </div>
+      
+      
       <div className={styles.header__location}>
         <span className={styles.header__city}>BCN, {time}</span>
-        <span className={styles.header__info}>
-          {weather && <>{weather.temp}°C, {weather.label}</>}
-        </span>
         {weather && (
           <span className={styles.header__status}>
             {getStatusLine(hour, weather.code, weather.temp, isWeekend)}

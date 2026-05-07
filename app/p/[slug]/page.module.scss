@@ -58,266 +58,132 @@
   &__content {
     position: relative;
     z-index: 1;
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    align-items: flex-start;
+    margin-top: 15px;
+    
     min-height: 100vh;
 
-    @media (max-width: 1024px) {
-      grid-template-columns: 1fr 1fr;
-    }
+    &__header {
+      position: fixed;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(12, 1fr); 
+      column-gap: 20px;
+      row-gap: 20px;
+      padding-left: 20px;
+      padding-right: 20px;
+      box-sizing: border-box;
+      width: 100%;
 
-    @media (max-width: 640px) {
-      grid-template-columns: 1fr;
-    }
-
-    /* ----------------------------------
-       Left column — info
-    ---------------------------------- */
-    &__info {
-      position: sticky;
-      top: 0;
-      height: 100dvh;
-      padding: 2rem;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-
-      @media (max-width: 640px) {
-        position: static;
-        height: auto;
-        border-right: none;
-        padding: 1rem;
-      }
-
-      &__back {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.75rem;
-        margin-bottom: 3rem;
-        text-transform: uppercase;
-        font-size: 0.7rem;
-        letter-spacing: 0.1em;
-        opacity: 0.6;
-        transition: gap 0.3s ease, opacity 0.2s ease;
-
-        svg {
-          transform: rotate(-135deg);
-          flex-shrink: 0;
-        }
-
-        &:hover {
-          gap: 1.25rem;
-          opacity: 1;
-        }
+      @media (max-width: 768px) {
+        display: flex;
+        justify-content: space-between;
       }
 
       &__title {
-        font-size: clamp(2rem, 3.5vw, 4rem);
-        line-height: 1;
-        font-weight: 500;
-        letter-spacing: -0.02em;
-        margin-bottom: 2rem;
+        grid-column: 1 / span 3;
+        font-size: 12px;
+        margin: 0;
+        font-weight: normal;
       }
 
-      &__description {
-        font-size: clamp(0.85rem, 1vw, 0.95rem);
-        line-height: 1.7;
-        opacity: 0.8;
-        overflow-y: auto;
+      &__category {
+        grid-column: 4 / span 3;
+        font-size: 12px;
+        margin: 0;
+        font-weight: normal;
+      }
+
+      &__year {
+        grid-column: 7 / span 1;
+        font-size: 12px;
+        margin: 0;
+        font-weight: normal;
+        @media (max-width: 768px) {
+          display: none;
+        }
+      }
+
+      &__close {
+        grid-column: 12 / span 1;
+        justify-self: end;
+        font-size: 12px;
+        margin: 0;
+        font-weight: normal;
+        background: none;
+        border: none;
+        color: inherit;
+        cursor: pointer;
       }
     }
 
-    /* ----------------------------------
-       Centre column — media
-    ---------------------------------- */
-    &__media {
-      padding: 2rem;
-      display: flex;
-      flex-direction: column;
-      gap: 10rem;
-      
-      @media (max-width: 1024px) {
-        // On tablet, media takes right column; details drops below
-        gap: 5rem;
-        grid-row: 1;
-        grid-column: 2;
-        padding: 1rem;
-      }
-      
-      @media (max-width: 640px) {
-        gap: 3rem;
-        grid-row: unset;
-        grid-column: unset;
+    &__wrapper {
+      position: relative;
+      top: 30px;
+      display: grid;
+      grid-template-columns: repeat(12, 1fr); 
+      column-gap: 20px;
+      row-gap: 20px;
+      padding-left: 20px;
+      padding-right: 20px;
+      box-sizing: border-box;
+      width: 100%;
+
+      @media (max-width: 768px) {
+        display: flex;
+        flex-direction: column;
       }
 
-      &__item {
-        width: 100%;
-        overflow: hidden;
-        transition: opacity 0.3s ease;
-        opacity: 0;
+      &__info {
+        position: sticky;
+        top: 60px;
+        height: fit-content;
+        grid-column: 1 / span 3;
 
-        &:hover {
-          opacity: 0.92;
+        @media (max-width: 768px) {
+          position: initial;
+        }
+
+        &__item {
+          margin-bottom: 15px;
+
+          &__title {
+            opacity: 0.4;
+          }
+
+          &__link {
+            margin-top: 15px;
+          }
+        }
+      }
+
+      &__media {
+        grid-column: 4 / span 6;
+
+        @media (max-width: 768px) {
+          padding-top: 0px !important;
+        }
+        
+        &__item {
+          margin-bottom: 120px;
+          @media (max-width: 768px) {
+            margin-bottom: 60px;
+          }
+
+          &:last-child {
+            margin-bottom: 0;
+          }
         }
 
         &__image {
           width: 100%;
           height: auto;
-          object-fit: cover;
-          display: block;
         }
-
         &__video {
           width: 100%;
           height: auto;
-          object-fit: cover;
-          display: block;
         }
       }
     }
 
-    /* ----------------------------------
-       Right column — details
-    ---------------------------------- */
-    &__details {
-      position: sticky;
-      top: 0;
-      height: 100dvh;
-      padding: 2rem;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 2.5rem;
-
-      @media (max-width: 1024px) {
-        // Spans full width below the two columns above
-        grid-column: 1 / -1;
-        position: static;
-        height: auto;
-        min-height: unset;
-        border-left: none;
-        padding: 1rem;
-      }
-
-      @media (max-width: 640px) {
-        grid-column: unset;
-      }
-
-      &__table {
-        width: 100%;
-        border-collapse: collapse;
-
-        &__row {
-          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-
-          &:first-child {
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-          }
-        }
-
-        &__cell {
-          vertical-align: top;
-          padding: 0.75rem 0;
-          font-size: 0.75rem;
-          letter-spacing: 0.07em;
-
-          &:first-child {
-            text-transform: uppercase;
-            opacity: 0.45;
-            width: 40%;
-            padding-right: 1rem;
-          }
-
-          &:last-child {
-            opacity: 0.9;
-            line-height: 1.6;
-
-            p {
-              margin: 0;
-              line-height: 1.6;
-            }
-          }
-        }
-      }
-
-      &__link {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.75rem;
-        text-decoration: none;
-        text-transform: uppercase;
-        font-size: 0.7rem;
-        letter-spacing: 0.1em;
-        position: relative;
-        transition: gap 0.3s ease, opacity 0.2s ease;
-
-
-        &::after {
-          content: '';
-          position: absolute;
-          bottom: -3px;
-          left: 0;
-          width: 0;
-          height: 1px;
-          background: currentColor;
-          transition: width 0.35s ease;
-        }
-
-        &:hover {
-          gap: 1.25rem;
-          opacity: 0.85;
-
-          &::after {
-            width: 100%;
-          }
-        }
-      }
-
-      &__nav {
-        padding-top: 4rem;
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        gap: 2rem;
-      
-        @media (max-width: 640px) {
-          margin-top: 0rem;
-        }
-      }
-      
-      .nav_btn {
-        background: none;
-        border: none;
-        padding: 0;
-        text-align: left;
-        cursor: pointer;
-        display: flex;
-        flex-direction: column;
-        transition: opacity 0.3s ease;
-      
-        &__label {
-          font-size: 0.65rem;
-          text-transform: uppercase;
-          letter-spacing: 0.15em;
-          opacity: 0.4;
-          margin-bottom: 0.5rem;
-        }
-      
-        &__title {
-          font-size: 1.25rem;
-          font-weight: 400;
-          opacity: 0.8;
-          transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.3s ease;
-        }
-      
-        &:hover {
-          .nav_btn__title {
-            opacity: 1;
-            transform: translateX(10px); // Subtle slide effect on hover
-          }
-        }      
-      }
-    }
   }
 }
