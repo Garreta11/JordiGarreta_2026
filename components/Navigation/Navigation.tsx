@@ -149,12 +149,27 @@ const Navigation = () => {
         </div>
       )}
 
+      {pathname === "/about" && (
+        <div className={styles.navigation__rights} data-anim="about-el">
+          <p className={styles.navigation__rights__item}>© 2026 ALL RIGHTS RESERVED</p>
+        </div>
+      )}
+      {pathname === "/about" && (
+        <div className={styles.navigation__team} data-anim="about-el">
+          <p className={styles.navigation__team__item}>DESIGN BY <Link href="#" className="bg">[ALEX MUÑOZ]</Link></p>
+          <p className={styles.navigation__team__item}>CODE BY 
+            <span className={styles.navigation__team__item__jordi}> [JORDI GARRETA]</span> 
+            <span className={styles.navigation__team__item__myself}> [MYSELF ^^]</span>
+          </p>
+        </div>
+      )}
+
       <div className={styles.navigation__contact}>
-        <Link href={`tel:${about?.phone}`} className={styles.navigation__contact__item}>
+        <Link href={`tel:${about?.phone}`} className={`${styles.navigation__contact__item} bg`}>
           <span className={styles.navigation__contact__item__label}>[PHONE]</span>
           <span className={styles.navigation__contact__item__value}>[{about?.phone}]</span>
         </Link>
-        <Link href={`mailto:${about?.email}`} className={styles.navigation__contact__item}>
+        <Link href={`mailto:${about?.email}`} className={`${styles.navigation__contact__item} bg`}>
           <span className={styles.navigation__contact__item__label}>[EMAIL]</span>
           <span className={styles.navigation__contact__item__value}>[{about?.email}]</span>
         </Link>

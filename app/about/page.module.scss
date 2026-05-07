@@ -66,8 +66,6 @@
     grid-template-columns: repeat(12, 1fr);
     column-gap: 20px;
     row-gap: 20px;
-    padding-left: 20px;
-    padding-right: 20px;
     box-sizing: border-box;
     width: 100%;
 
@@ -115,6 +113,14 @@
       display: flex;
       flex-direction: column;
       opacity: 0;
+    }
+  }
+
+  &__footer {
+    display: none;
+
+    @media (max-width: 768px) {
+      display: block;
     }
   }
 }

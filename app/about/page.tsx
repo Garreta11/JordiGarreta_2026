@@ -103,14 +103,22 @@ export default function AboutPage() {
           <div className={styles.page__grid__col} data-anim="about-el">
             <p className={styles.label}>CONTACT</p>
             <ul className={styles.list}>
-              <li>[{about?.email}]</li>
-              <li>[{about?.phone}]</li>
+              <li>
+                <Link href={`mailto:${about?.email}`} className={`${styles.list__item} bg`}>
+                  [{about?.email}]
+                </Link>
+              </li>
+              <li>
+                <Link href={`tel:${about?.phone}`} className={`${styles.list__item} bg`}>
+                  [{about?.phone}]
+                </Link>
+              </li>
             </ul>
             <p className={`${styles.label} ${styles.label__gap}`}>SOCIAL</p>
             <ul className={styles.list}>
               {about?.social?.map((item, i) => (
                 <li key={i}>
-                  <Link href={item.url} target="_blank" className={styles.page__grid__col__link}>
+                  <Link href={item.url} target="_blank" className={styles.page__grid__col__link} className="bg">
                     [{item.name}]
                   </Link>
                 </li>
@@ -119,6 +127,12 @@ export default function AboutPage() {
           </div>
 
         </div>
+
+        <div className={styles.page__footer} data-anim="about-el">
+          <p className={styles.navigation__team__item}>DESIGN BY <Link href="#" className="bg">[ALEX MUÑOZ]</Link></p>
+          <p className={styles.navigation__team__item}>CODE BY [JORDI GARRETA]</p>
+        </div>
+
       </div>
     </div>
   );

@@ -12,6 +12,7 @@
   padding-right: 20px;
   box-sizing: border-box;
   pointer-events: none;
+  align-items: end;
 
   @media (max-width: 768px) {
     display: grid;
@@ -84,8 +85,37 @@
     }
   }
 
+  &__rights {
+    grid-column: 4 / span 2;
+    @media (max-width: 768px) {
+      display: none;
+     }
+  }
+  
+  &__team {
+    pointer-events: auto;
+    grid-column: 7 / span 3;
+
+     @media (max-width: 768px) {
+      display: none;
+     }
+    
+    &__item {
+      &__jordi {
+        &:hover ~ .navigation__team__item__myself {
+          opacity: 1;
+        }
+      }
+      &__myself {
+        transition: all 0.3s ease;
+        opacity: 0;
+      }
+    }
+
+  }
+
   &__contact {
-    grid-column: 9 / 13;
+    grid-column: 12 / span 1;
     text-align: right;
     display: flex;
     flex-direction: column;
@@ -105,6 +135,7 @@
 
     &__item {
       position: relative;
+      display: grid;
 
       &:hover &__label {
         opacity: 0;
@@ -114,16 +145,18 @@
         opacity: 1;
       }
 
+      &__label,
+      &__value {
+        grid-area: 1 / 1;
+        justify-self: end;
+      }
+
       &__label {
-        display: block;
         opacity: 1;
         transition: opacity 0.2s ease;
       }
 
       &__value {
-        position: absolute;
-        right: 0;
-        top: 0;
         opacity: 0;
         white-space: nowrap;
         transition: opacity 0.2s ease;
