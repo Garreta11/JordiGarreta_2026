@@ -146,8 +146,9 @@
         text-align: right;
       }
     }
-
+    
     &__year {
+      text-align: right;
       // Alias handled via nth-child above; explicit class allows direct override
       @media (max-width: 768px) {
         display: none;
@@ -155,6 +156,7 @@
     }
     
     &__index {
+      text-align: right;
       // Alias handled via nth-child above; explicit class allows direct override
       @media (max-width: 768px) {
         display: none;
