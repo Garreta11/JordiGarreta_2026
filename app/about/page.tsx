@@ -118,7 +118,7 @@ export default function AboutPage() {
             <ul className={styles.list}>
               {about?.social?.map((item, i) => (
                 <li key={i}>
-                  <Link href={item.url} target="_blank" className={styles.page__grid__col__link} className="bg">
+                  <Link href={item.url} target="_blank" className={`${styles.page__grid__col__link} bg`}>
                     [{item.name}]
                   </Link>
                 </li>
