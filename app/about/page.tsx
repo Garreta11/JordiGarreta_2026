@@ -129,7 +129,7 @@ export default function AboutPage() {
         </div>
 
         <div className={styles.page__footer} data-anim="about-el">
-          <p className={styles.navigation__team__item}>DESIGN BY <Link href="#" className="bg">[ALEX MUÑOZ]</Link></p>
+          <p className={styles.navigation__team__item}>DESIGN BY <Link href="https://munozpapase.it/" className="bg">[ALEX MUÑOZ]</Link></p>
           <p className={styles.navigation__team__item}>CODE BY [JORDI GARRETA]</p>
         </div>
 
