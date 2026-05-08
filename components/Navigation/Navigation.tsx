@@ -169,7 +169,7 @@ const Navigation = () => {
           <span className={styles.navigation__contact__item__label}>[PHONE]</span>
           <span className={styles.navigation__contact__item__value}>[{about?.phone}]</span>
         </Link>
-        <Link href={`mailto:${about?.email}`} className={`${styles.navigation__contact__item} bg`}>
+        <Link href={`mailto:${about?.email.toLowerCase()}`} className={`${styles.navigation__contact__item} bg`}>
           <span className={styles.navigation__contact__item__label}>[EMAIL]</span>
           <span className={styles.navigation__contact__item__value}>[{about?.email}]</span>
         </Link>

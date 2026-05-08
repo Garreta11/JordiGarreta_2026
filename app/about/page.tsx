@@ -104,7 +104,7 @@ export default function AboutPage() {
             <p className={styles.label}>CONTACT</p>
             <ul className={styles.list}>
               <li>
-                <Link href={`mailto:${about?.email}`} className={`${styles.list__item} bg`}>
+                <Link href={`mailto:${about?.email.toLowerCase()}`} className={`${styles.list__item} bg`}>
                   [{about?.email}]
                 </Link>
               </li>
