@@ -41,7 +41,7 @@ export default function AboutPage() {
   return (
     <div className={styles.page}>
 
-      {bgUrl !== "" && (
+      {/* {bgUrl !== "" && (
         <>
           <div className={styles.page__wrapper}>
             <div
@@ -51,12 +51,8 @@ export default function AboutPage() {
               data-anim="post-bg"
             />
           </div>
-          {/* <div className={styles.page__bg}>
-            <AboutBg ref={bgCanvasRef} src={bgUrl} />
-          </div> */}
         </>
-
-      )}
+      )} */}
       <div className={styles.page__overlay} />
 
       <div className={styles.page__content} ref={contentRef}>
