@@ -1,7 +1,7 @@
 .more {
   position: relative;
   z-index: 1;
-  padding: 0 20px;
+  padding: 0 0px;
   margin-top: 80px;
   padding-bottom: 40px;
   min-height: 50dvh;
@@ -67,8 +67,7 @@
     display: grid;
     grid-template-columns: repeat(12, 1fr);
     column-gap: 20px;
-    padding-top: 8px;
-    padding-bottom: 8px;
+    padding: 8px 20px;
     box-sizing: border-box;
     width: 100%;
     cursor: pointer;

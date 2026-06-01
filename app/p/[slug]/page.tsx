@@ -135,7 +135,7 @@ export default function PostPage({
               <h1 className={styles.page__content__header__title}>{post.title}</h1>
               <p className={styles.page__content__header__category}>{post.basicInfo.category}</p>
               <p className={styles.page__content__header__year}>{post.basicInfo.year}</p>
-              <button className={styles.page__content__header__close} onClick={() => navigateTo("/")}>
+              <button className={`bg ${styles.page__content__header__close} ${styles.page__content__header__close}`} onClick={() => navigateTo("/")}>
                 [CLOSE]</button>
             </div>
 
@@ -146,8 +146,8 @@ export default function PostPage({
                   <div className={styles.page__content__wrapper__info__item__description}>
                     <PortableText value={post.description} />
                     {post.basicInfo.link && (
-                      <div className={styles.page__content__wrapper__info__item__link}>
-                        <Link href={post.basicInfo.link} target="_blank">
+                      <div className={`bg ${styles.page__content__wrapper__info__item__link}`}>
+                        <Link className="bg" href={post.basicInfo.link} target="_blank">
                           [{post.basicInfo.link.replace(/^https?:\/\//, '')}]
                         </Link>
                       </div>

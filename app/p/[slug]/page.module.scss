@@ -104,6 +104,7 @@
       }
 
       &__close {
+        position: relative;
         grid-column: 12 / span 1;
         justify-self: end;
         font-size: 12px;
