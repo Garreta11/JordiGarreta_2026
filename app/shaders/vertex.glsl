@@ -49,6 +49,9 @@ void main() {
     float bulge = exp(-mouseDist * mouseDist * 5.0) * uMouseStrength;
     pos.z += bulge * 0.5;
 
+    float zoom = 1.12;
+    uv /= zoom;
+
     vMouseInfluence = bulge;
     vUvCorrected = uv + 0.5;
 

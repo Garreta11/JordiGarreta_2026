@@ -118,7 +118,7 @@ export default class InfiniteSlider {
       });
 
       // const geo = new THREE.PlaneGeometry(0.77, 1.5, 20, 20);
-      const geo = new THREE.PlaneGeometry(1.0, 1.95, 20, 20);
+      const geo = new THREE.PlaneGeometry(1.0, 1.95, 100, 100);
       const mesh = new THREE.Mesh(geo, mat);
       mesh.userData.slug = im.slug;
 
