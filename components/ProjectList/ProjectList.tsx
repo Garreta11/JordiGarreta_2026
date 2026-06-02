@@ -6,10 +6,11 @@ import gsap from "gsap";
 
 interface ProjectListProps {
   posts: Post[];
+  isOpen: boolean;
   onProjectClick: (slug: string, imageUrl: string) => void;
 }
 
-const ProjectList = forwardRef(({ posts, onProjectClick }: ProjectListProps, ref: ForwardedRef<HTMLDivElement>) => {
+const ProjectList = forwardRef(({ posts, isOpen, onProjectClick }: ProjectListProps, ref: ForwardedRef<HTMLDivElement>) => {
   // Estados para el crossfade del fondo
   const [bgImages, setBgImages] = useState({ a: "", b: "" });
   const [activeLayer, setActiveLayer] = useState<"a" | "b">("a");
@@ -47,6 +48,7 @@ const ProjectList = forwardRef(({ posts, onProjectClick }: ProjectListProps, ref
   }, []);
 
   return (
+    <>
     <div ref={ref} className={styles.list}>
       {/* 1. CONTENEDOR DE FONDOS (CROSSFADE) */}
       <div className={styles.list__bg_container}>
@@ -111,7 +113,11 @@ const ProjectList = forwardRef(({ posts, onProjectClick }: ProjectListProps, ref
           );
         })}
       </div>
+
     </div>
+    {/* 4. OVERLAY */}
+    {isOpen && <div className={styles.list__overlay} />}
+    </>
   );
 });
 

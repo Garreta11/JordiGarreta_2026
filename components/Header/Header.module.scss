@@ -14,8 +14,6 @@
   width: 100%;
   
   @media (max-width: 768px) {
-    display: flex;
-    justify-content: space-between;
     padding-left: 10px;
     padding-right: 10px;
   }
@@ -28,7 +26,11 @@
   // 2. Empieza en la columna 4
   &__role {
     grid-column: 4 / span 4; // Empieza en la 4 y le damos un ancho de 4 columnas
-    
+
+    @media (max-width: 768px) {
+      grid-column: 4 / span 5;
+    }
+
     &__job, &__available {
       margin: 0; // Limpia márgenes por defecto de los <p>
     }

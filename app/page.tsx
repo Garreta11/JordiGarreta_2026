@@ -450,7 +450,8 @@ export default function Home() {
 
       <ProjectList 
         ref={listViewRef} 
-        posts={posts} 
+        posts={posts}
+        isOpen={viewMode === "list"}
         onProjectClick={handleViewMore} 
       />
     </div>
