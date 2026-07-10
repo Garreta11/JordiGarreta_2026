@@ -156,7 +156,7 @@ const Navigation = () => {
       )}
       {pathname === "/about" && (
         <div className={styles.navigation__team} data-anim="about-el">
-          <p className={styles.navigation__team__item}>DESIGN BY <Link href="#" className="bg">[ALEX MUÑOZ]</Link></p>
+          <p className={styles.navigation__team__item}>DESIGN BY <Link href="https://munozpapase.it/" target="_blank" className="bg">[ALEX MUÑOZ]</Link></p>
           <p className={styles.navigation__team__item}>CODE BY 
             <span className={styles.navigation__team__item__jordi}> [JORDI GARRETA]</span> 
             <span className={styles.navigation__team__item__myself}> [MYSELF ^^]</span>
