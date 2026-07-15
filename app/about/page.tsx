@@ -105,7 +105,7 @@ export default function AboutPage() {
                 </Link>
               </li>
               <li>
-                <Link href={`tel:${about?.phone}`} className={`${styles.list__item} bg`}>
+                <Link href={`https://wa.me/${about?.phone.replace(/\D/g, "")}`} className={`${styles.list__item} bg`}>
                   [{about?.phone}]
                 </Link>
               </li>

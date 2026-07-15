@@ -165,7 +165,8 @@ const Navigation = () => {
       )}
 
       <div className={styles.navigation__contact}>
-        <Link href={`tel:${about?.phone}`} className={`${styles.navigation__contact__item} bg`}>
+        {/* <Link href={`tel:${about?.phone}`} className={`${styles.navigation__contact__item} bg`}> */}
+        <Link  href={`https://wa.me/${about?.phone.replace(/\D/g, "")}`} className={`${styles.navigation__contact__item} bg`}>
           <span className={styles.navigation__contact__item__label}>[PHONE]</span>
           <span className={styles.navigation__contact__item__value}>[{about?.phone}]</span>
         </Link>
