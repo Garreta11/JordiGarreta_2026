@@ -1,260 +1,77 @@
-"use client";
-import { useEffect, useState, use, useRef, useCallback } from "react";
-import { Post } from "@/lib/types";
-import { postQueries } from "@/lib/queries/post.queries";
+import type { Metadata } from "next";
 import { client } from "@/sanity/lib/client";
-import styles from "./page.module.scss";
+import { postQueries } from "@/lib/queries/post.queries";
+import { Post } from "@/lib/types";
 import { urlFor } from "@/lib/sanity.image";
-import { videoUrlFor } from "@/lib/sanity.video";
-import Image from "next/image";
-import { PortableText } from "@portabletext/react";
-import { useRouter } from "next/navigation";
-import { postPageIntro, slideOutPostContent } from "@/app/animations";
-import Link from "next/link";
-import gsap from "gsap";
-import MoreProjects from "@/components/MoreProjects/MoreProjects";
+import { portableTextToPlainText, SITE_URL } from "@/lib/seo";
+import PostClient from "./PostClient";
 
-export default function PostPage({
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const post: Post | null = await client.fetch(postQueries.bySlug, { slug });
+
+  if (!post) return {};
+
+  const description =
+    portableTextToPlainText(post.description) ||
+    `${post.basicInfo?.category ?? "Project"} for ${post.basicInfo?.client ?? "a client"}${
+      post.basicInfo?.year ? ` (${post.basicInfo.year})` : ""
+    }.`;
+  const imageUrl = urlFor(post.mainImage).width(1200).height(630).fit("crop").url();
+
+  return {
+    title: post.title,
+    description,
+    alternates: { canonical: `/p/${slug}` },
+    openGraph: {
+      title: post.title,
+      description,
+      url: `/p/${slug}`,
+      type: "article",
+      images: [{ url: imageUrl, width: 1200, height: 630, alt: post.title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description,
+      images: [imageUrl],
+    },
+  };
+}
+
+export default async function PostPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  const { slug } = use(params as Promise<{ slug: string }>);
-  const router = useRouter();
-  const [post, setPost] = useState<Post | null>(null);
-  const [bgUrl, setBgUrl] = useState("");
-  const [bgLoaded, setBgLoaded] = useState(false);
+  const { slug } = await params;
+  const post: Post | null = await client.fetch(postQueries.bySlug, { slug });
 
-  const bgRef = useRef<HTMLDivElement>(null);
-  const headerRef = useRef<HTMLDivElement>(null);
-  const infoRef = useRef<HTMLDivElement>(null);
-  const mediaItemsRef = useRef<HTMLElement[]>([]);
-  const mediaContainerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!slug) return;
-    const fetchPost = async () => {
-      const data = await client.fetch(postQueries.bySlug, { slug });
-      setPost(data as Post);
-    };
-    fetchPost();
-  }, [slug]);
-
-  useEffect(() => {
-    if (!post) return;
-    const url = urlFor(post.mainImage).url();
-    const img = new window.Image();
-    img.onload = () => {
-      setBgUrl(url);
-      setBgLoaded(true);
-    };
-    img.src = url;
-  }, [post]);
-
-  useEffect(() => {
-    if (
-      !bgLoaded ||
-      !bgRef.current ||
-      !headerRef.current ||
-      !infoRef.current ||
-      mediaItemsRef.current.length === 0
-    ) return;
-
-    gsap.set(bgRef.current, { opacity: 0, scale: 1.05 });
-    gsap.set(headerRef.current, { opacity: 0, x: -40 });
-    gsap.set(infoRef.current, { opacity: 0, x: -40 });
-    gsap.set(mediaItemsRef.current, { opacity: 0, y: 60 });
-
-    postPageIntro(
-      bgRef.current,
-      infoRef.current,
-      mediaItemsRef.current,
-      headerRef.current
-    );
-  }, [bgLoaded]);
-
-  const updateMediaPadding = useCallback(() => {
-    const container = mediaContainerRef.current;
-    const items = mediaItemsRef.current;
-    if (!container || items.length === 0) return;
-
-    const vh = window.innerHeight;
-    const first = items[0];
-    const last = items[items.length - 1];
-
-    if (first) container.style.paddingTop = `${Math.max(0, (vh - first.offsetHeight) / 2)}px`;
-    if (last) container.style.paddingBottom = `${Math.max(0, (vh - last.offsetHeight) / 2)}px`;
-  }, []);
-
-  useEffect(() => {
-    if (!post) return;
-
-    const ro = new ResizeObserver(updateMediaPadding);
-    mediaItemsRef.current.forEach(item => ro.observe(item));
-    window.addEventListener("resize", updateMediaPadding);
-
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", updateMediaPadding);
-    };
-  }, [post, updateMediaPadding]);
-
-  // Unified Exit & Navigate function
-  const navigateTo = useCallback((target: string) => {
-    if (!bgRef.current || !headerRef.current || !infoRef.current) {
-      router.push(target);
-      return;
-    }
-
-    slideOutPostContent(
-      headerRef.current,
-      infoRef.current,
-      mediaItemsRef.current,
-      bgRef.current,
-      () => router.push(target)
-    );
-  }, [router]);
+  const jsonLd = post && {
+    "@context": "https://schema.org",
+    "@type": "CreativeWork",
+    name: post.title,
+    description: portableTextToPlainText(post.description),
+    url: `${SITE_URL}/p/${slug}`,
+    image: urlFor(post.mainImage).width(1200).height(630).fit("crop").url(),
+    creator: { "@type": "Person", name: "Jordi Garreta" },
+    dateCreated: post.basicInfo?.year ? String(post.basicInfo.year) : undefined,
+    ...(post.basicInfo?.client ? { about: post.basicInfo.client } : {}),
+  };
 
   return (
-    <div className={styles.page}>
-      {post && (
-        <>
-          <div className={styles.page__wrapper}>
-            <div
-              ref={bgRef}
-              className={styles.page__wrapper__bg}
-              style={{ backgroundImage: bgUrl ? `url(${bgUrl})` : "none" }}
-              data-anim="post-bg"
-            />
-          </div>
-          <div className={styles.page__overlay} />
-
-          <div className={styles.page__content}>
-
-            <div ref={headerRef} className={styles.page__content__header} data-anim="post-header">
-              <h1 className={styles.page__content__header__title}>{post.title}</h1>
-              <p className={styles.page__content__header__category}>{post.basicInfo.category}</p>
-              <p className={styles.page__content__header__year}>{post.basicInfo.year}</p>
-              <button className={`bg ${styles.page__content__header__close} ${styles.page__content__header__close}`} onClick={() => navigateTo("/")}>
-                [CLOSE]</button>
-            </div>
-
-            <div className={styles.page__content__wrapper}>
-              <div ref={infoRef} className={styles.page__content__wrapper__info} data-anim="post-info">
-                <div className={styles.page__content__wrapper__info__item}>
-                  <p className={styles.page__content__wrapper__info__item__title}>OVERVIEW</p>
-                  <div className={styles.page__content__wrapper__info__item__description}>
-                    <PortableText value={post.description} />
-                    {post.basicInfo.link && (
-                      <div className={`bg ${styles.page__content__wrapper__info__item__link}`}>
-                        <Link className="bg" href={post.basicInfo.link} target="_blank">
-                          [{post.basicInfo.link.replace(/^https?:\/\//, '')}]
-                        </Link>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className={styles.page__content__wrapper__info__item}>
-                  <p className={styles.page__content__wrapper__info__item__title}>CLIENT</p>
-                  <p className={styles.page__content__wrapper__info__item__description}>{post.basicInfo.client}</p>
-                </div>
-                <div className={styles.page__content__wrapper__info__item}>
-                  <p className={styles.page__content__wrapper__info__item__title}>ROLE</p>
-                  <p className={styles.page__content__wrapper__info__item__description}>{post.basicInfo.role}</p>
-                </div>
-                <div className={styles.page__content__wrapper__info__item}>
-                  <p className={styles.page__content__wrapper__info__item__title}>TOOLS</p>
-                  <p className={styles.page__content__wrapper__info__item__description}>{post.basicInfo.tools.join(", ")}</p>
-                </div>
-              </div>
-
-              <div ref={mediaContainerRef} className={styles.page__content__wrapper__media}>
-                {post.media.map((media, index) => {
-                  const src = media["_type"] === "image" ? urlFor(media).url() : videoUrlFor(media as any);
-                  return (
-                    <div key={index} className={styles.page__content__wrapper__media__item} ref={(el) => { if (el) mediaItemsRef.current[index] = el; }} data-anim="post-media">
-                      {media["_type"] === "image" ? (
-                        <Image src={src} alt={post.title} width={800} height={800} className={styles.page__content__wrapper__media__image} />
-                      ) : (
-                        <video src={src} autoPlay muted loop playsInline className={styles.page__content__wrapper__media__video} />
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <MoreProjects currentSlug={slug} onProjectClick={(s) => navigateTo(`/p/${s}`)} />
-
-            {/* <div ref={infoRef} className={styles.page__content__info} style={{ opacity: 0 }} data-anim="post-info">
-              <button onClick={() => navigateTo("/")} className={styles.page__content__info__back}>
-                <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
-                  <path d="M15.707 0.999999C15.707 0.447715 15.2593 -2.87362e-07 14.707 -5.40243e-07L5.70703 2.60547e-07C5.15475 -7.66277e-08 4.70703 0.447715 4.70703 1C4.70703 1.55228 5.15475 2 5.70703 2L13.707 2L13.707 10C13.707 10.5523 14.1547 11 14.707 11C15.2593 11 15.707 10.5523 15.707 10L15.707 0.999999ZM0.707031 15L1.41414 15.7071L15.4141 1.70711L14.707 1L13.9999 0.292893L-7.55191e-05 14.2929L0.707031 15Z" fill="currentColor"/>
-                </svg>
-                Go back
-              </button>
-
-              <h1 className={styles.page__content__info__title}>{post.title}</h1>
-
-              <div className={styles.page__content__info__description}>
-                <PortableText value={post.description} />
-              </div>              
-            </div> */}
-
-            {/*
-            <div className={styles.page__content__media}>
-              {post.media.map((media, index) => {
-                const src = media["_type"] === "image" ? urlFor(media).url() : videoUrlFor(media as any);
-                return (
-                  <div key={index} className={styles.page__content__media__item} ref={(el) => { if (el) mediaItemsRef.current[index] = el; }} data-anim="post-media">
-                    {media["_type"] === "image" ? (
-                      <Image src={src} alt={post.title} width={800} height={800} className={styles.page__content__media__item__image} />
-                    ) : (
-                      <video src={src} autoPlay muted loop playsInline className={styles.page__content__media__item__video} />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-            */}
-
-            {/* <div ref={detailsRef} className={styles.page__content__details} style={{ opacity: 0 }} data-anim="post-details">
-              <table className={styles.page__content__details__table}>
-                <tbody>
-                  <tr className={styles.page__content__details__table__row}><td className={styles.page__content__details__table__cell}>Client</td><td className={styles.page__content__details__table__cell}>{post.basicInfo.client}</td></tr>
-                  <tr className={styles.page__content__details__table__row}><td className={styles.page__content__details__table__cell}>Type</td><td className={styles.page__content__details__table__cell}>{post.basicInfo.category}</td></tr>
-                  <tr className={styles.page__content__details__table__row}><td className={styles.page__content__details__table__cell}>Role</td><td className={styles.page__content__details__table__cell}>{post.basicInfo.role}</td></tr>
-                  <tr className={styles.page__content__details__table__row}><td className={styles.page__content__details__table__cell}>Year</td><td className={styles.page__content__details__table__cell}>{post.basicInfo.year}</td></tr>
-                  <tr className={styles.page__content__details__table__row}><td className={styles.page__content__details__table__cell}>Tools</td><td className={styles.page__content__details__table__cell}>{post.basicInfo.tools.join(", ")}</td></tr>
-                </tbody>
-              </table>
-
-              {post.basicInfo.link && (
-                <Link href={post.basicInfo.link} target="_blank" rel="noopener noreferrer" className={styles.page__content__details__link}>
-                  VIEW PROJECT
-                  <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
-                    <path d="M15.707 0.999999C15.707 0.447715 15.2593 -2.87362e-07 14.707 -5.40243e-07L5.70703 2.60547e-07C5.15475 -7.66277e-08 4.70703 0.447715 4.70703 1C4.70703 1.55228 5.15475 2 5.70703 2L13.707 2L13.707 10C13.707 10.5523 14.1547 11 14.707 11C15.2593 11 15.707 10.5523 15.707 10L15.707 0.999999ZM0.707031 15L1.41414 15.7071L15.4141 1.70711L14.707 1L13.9999 0.292893L-7.55191e-05 14.2929L0.707031 15Z" fill="currentColor"/>
-                  </svg>
-                </Link>
-              )}
-              <div className={styles.page__content__details__nav}>
-                {post.prev && (
-                  <button onClick={() => navigateTo(`/p/${post.prev?.slug}`)} className={styles.nav_btn}>
-                    <span className={styles.nav_btn__label}>Previous</span>
-                    <span className={styles.nav_btn__title}>{post.prev.title}</span>
-                  </button>
-                )}
-                {post.next && (
-                  <button onClick={() => navigateTo(`/p/${post.next?.slug}`)} className={styles.nav_btn}>
-                    <span className={styles.nav_btn__label}>Next</span>
-                    <span className={styles.nav_btn__title}>{post.next.title}</span>
-                  </button>
-                )}
-              </div>
-            </div> */}
-          </div>
-        </>
+    <>
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
       )}
-    </div>
+      <PostClient slug={slug} />
+    </>
   );
 }
